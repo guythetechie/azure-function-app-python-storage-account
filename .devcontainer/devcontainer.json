@@ -1,0 +1,28 @@
+{
+	"name": "Azure functions",
+	"image": "mcr.microsoft.com/devcontainers/base:jammy",
+	"features": {
+		"ghcr.io/devcontainers/features/azure-cli:1": {
+			"version": "latest",
+			"installBicep": true
+		},
+		"ghcr.io/devcontainers/features/powershell:1": {
+			"version": "latest"
+		},
+		"ghcr.io/devcontainers/features/python:1": {}
+	},
+	// Use 'postCreateCommand' to run commands after the container is created.
+	"postCreateCommand": "sh .devcontainer/install.sh",
+	// Configure tool-specific properties.
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-azuretools.vscode-bicep",
+				"ms-azuretools.vscode-azurefunctions",
+				"GitHub.copilot",
+				"timonwong.shellcheck",
+				"foxundermoon.shell-format"
+			]
+		}
+	}
+}
