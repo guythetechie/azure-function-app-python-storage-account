@@ -383,7 +383,7 @@ module eventGridServiceBusEventGridSubscriptionTopicRoleAssignment 'br/public:av
   }
 }
 
-module functionAppServiceBusEventGridSubscriptionTopicFunctionAppSubscriptionRoleAssignment 'br/public:avjson/ptn/authorization/resource-role-assignment:0.1.1' = {
+module functionAppServiceBusEventGridSubscriptionTopicFunctionAppSubscriptionRoleAssignment 'br/public:avm/ptn/authorization/resource-role-assignment:0.1.1' = {
   scope: resourceGroup
   name: 'function-app-service-bus-event-grid-subscription-topic-function-app-subscription-role-assignment'
   params: {
