@@ -19,6 +19,18 @@ param eventGridSubscriptionName string = 'on-blob-change'
 var functionAppDeploymentContainerName = '${functionAppName}-deployment'
 var storageAccountConnectionString = 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
 var allowedIpAddresses = map(split(allowedIpAddressesSring, ','), address => trim(address))
+var serviceBusEventGridSubscriptionTopicName = eventGridSubscriptionName
+var serviceBusEventGridSubscriptionTopicFunctionAppSubscriptionName = functionAppName
+
+resource serviceBusDataReceiverRoleDefinition 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
+  name: '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0'
+  scope: subscription()
+}
+
+resource serviceBusDataSenderRoleDefinition 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
+  name: '69a216fc-b8fb-44d8-bc22-1f3c2cd27a39'
+  scope: subscription()
+}
 
 module resourceGroupDeployment 'br/public:avm/res/resources/resource-group:0.4.0' = {
   scope: subscription()
@@ -291,10 +303,10 @@ module serviceBusDeployment 'br/public:avm/res/service-bus/namespace:0.10.0' = {
     }
     topics: [
       {
-        name: eventGridSubscriptionName
+        name: serviceBusEventGridSubscriptionTopicName
         subscriptions: [
           {
-            name: functionAppName
+            name: serviceBusEventGridSubscriptionTopicFunctionAppSubscriptionName
           }
         ]
       }
@@ -319,6 +331,21 @@ module serviceBusDeployment 'br/public:avm/res/service-bus/namespace:0.10.0' = {
   }
 }
 
+resource serviceBus 'Microsoft.ServiceBus/namespaces@2023-01-01-preview' existing = {
+  name: serviceBusNamespaceName
+  scope: resourceGroup
+}
+
+resource serviceBusEventGridSubscriptionTopic 'Microsoft.ServiceBus/namespaces/topics@2023-01-01-preview' existing = {
+  name: serviceBusEventGridSubscriptionTopicName
+  parent: serviceBus
+}
+
+resource serviceBusEventGridSubscriptionTopicFunctionAppSubscription 'Microsoft.ServiceBus/namespaces/topics/subscriptions@2023-01-01-preview' existing = {
+  name: serviceBusEventGridSubscriptionTopicFunctionAppSubscriptionName
+  parent: serviceBusEventGridSubscriptionTopic
+}
+
 module eventGridSystemTopicDeployment 'br/public:avm/res/event-grid/system-topic:0.4.0' = {
   scope: resourceGroup
   name: 'event-grid-system-topic-deployment'
@@ -326,6 +353,9 @@ module eventGridSystemTopicDeployment 'br/public:avm/res/event-grid/system-topic
     name: eventGridTopicName
     location: location
     tags: tags
+    managedIdentities: {
+      systemAssigned: true
+    }
     source: storageAccountDeployment.outputs.resourceId
     topicType: 'Microsoft.Storage.StorageAccounts'
     diagnosticSettings: [
@@ -340,5 +370,25 @@ module eventGridSystemTopicDeployment 'br/public:avm/res/event-grid/system-topic
         workspaceResourceId: logAnalyticsWorkspaceDeployment.outputs.resourceId
       }
     ]
+  }
+}
+
+module eventGridServiceBusEventGridSubscriptionTopicRoleAssignment 'br/public:avm/ptn/authorization/resource-role-assignment:0.1.1' = {
+  scope: resourceGroup
+  name: 'event-grid-service-bus-event-grid-subscription-topic-role-assignment'
+  params: {
+    principalId: eventGridSystemTopicDeployment.outputs.systemAssignedMIPrincipalId
+    resourceId: serviceBusEventGridSubscriptionTopic.id
+    roleDefinitionId: serviceBusDataSenderRoleDefinition.id
+  }
+}
+
+module functionAppServiceBusEventGridSubscriptionTopicFunctionAppSubscriptionRoleAssignment 'br/public:avjson/ptn/authorization/resource-role-assignment:0.1.1' = {
+  scope: resourceGroup
+  name: 'function-app-service-bus-event-grid-subscription-topic-function-app-subscription-role-assignment'
+  params: {
+    principalId: functionAppDeployment.outputs.identity.principalId
+    resourceId: serviceBusEventGridSubscriptionTopicFunctionAppSubscription.id
+    roleDefinitionId: serviceBusDataReceiverRoleDefinition.id
   }
 }
