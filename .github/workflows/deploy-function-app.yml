@@ -23,7 +23,7 @@ jobs:
           ALLOWED_IP_ADDRESSES: ${{ vars.ALLOWED_IP_ADDRESSES }}
           AZURE_LOCATION: eastus
           ACTION_ON_UNMANAGE: deleteAll
-          DEPLOYMENT_STACK_NAME: deploy-python-function-app2
+          DEPLOYMENT_STACK_NAME: ${{ vars.DEPLOYMENT_STACK_NAME }}
           TEMPLATE_FILE_PATH: "${{ github.workspace }}/bicep/main.bicep"
           TEMPLATE_PARAMETER_FILE_PATH: "${{ github.workspace }}/bicep/main.bicepparam"
         run: |
@@ -38,3 +38,25 @@ jobs:
             --template-file "$TEMPLATE_FILE_PATH" \
             --parameters "$TEMPLATE_PARAMETER_FILE_PATH" \
             --yes
+      - name: Publish function app
+        env:
+          DEPLOYMENT_STACK_NAME: ${{ vars.DEPLOYMENT_STACK_NAME }}
+          ZIP_FILE_PATH: ${{ runner.temp }}/function-app.zip
+        run: |
+          set -euo pipefail
+
+          echo "Creating zip file..."
+          zip "$ZIP_FILE_PATH" \
+            "${{ github.workspace }}/src/functionapp/function_app.py" \
+            "${{ github.workspace }}/src/functionapp/function_app/host.json" \
+            "${{ github.workspace }}/src/functionapp/function_app/requirements.txt" \
+            "${{ github.workspace }}/src/functionapp/function_app/import_on_timer.py" \
+            "${{ github.workspace }}/src/functionapp/function_app/import_with_service_bus.py"
+
+          echo "Publishing function app..."
+          FUNCTION_APP_NAME="az stack sub show -n $DEPLOYMENT_STACK_NAME --query 'outputs.functionAppName.value' -o tsv"
+          RESOURCE_GROUP_NAME="az stack sub show -n $DEPLOYMENT_STACK_NAME --query 'outputs.resourceGroupName.value' -o tsv"
+          az functionapp deployment source config-zip \
+            --name "$FUNCTION_APP_NAME" \
+            --resource-group "$RESOURCE_GROUP_NAME" \
+            --src "$ZIP_FILE_PATH"

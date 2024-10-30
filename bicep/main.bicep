@@ -264,6 +264,10 @@ module functionAppDeployment 'br/public:avm/res/web/site:0.10.0' = {
           value: storageAccountConnectionString
         }
         {
+          name: 'STORAGE_ACCOUNT_CONNECTION_STRING'
+          value: storageAccountConnectionString
+        }
+        {
           name: 'STORAGE_ACCOUNT_CONTAINER_NAME'
           value: functionAppDeploymentContainerName
         }
@@ -419,6 +423,7 @@ module eventGridServiceBusEventGridSubscriptionTopicRoleAssignment 'br/public:av
     principalId: eventGridSystemTopicDeployment.outputs.systemAssignedMIPrincipalId
     resourceId: serviceBusEventGridSubscriptionTopic.id
     roleDefinitionId: serviceBusDataSenderRoleDefinition.id
+    principalType: 'ServicePrincipal'
   }
 }
 
@@ -432,6 +437,7 @@ module functionAppServiceBusEventGridSubscriptionTopicFunctionAppSubscriptionRol
     principalId: functionAppDeployment.outputs.systemAssignedMIPrincipalId
     resourceId: serviceBusEventGridSubscriptionTopicFunctionAppSubscription.id
     roleDefinitionId: serviceBusDataReceiverRoleDefinition.id
+    principalType: 'ServicePrincipal'
   }
 }
 
@@ -445,5 +451,9 @@ module functionAppStorageAccountFunctionAppDeploymentContainerRoleAssignment 'br
     principalId: functionAppDeployment.outputs.systemAssignedMIPrincipalId
     resourceId: storageAccountFunctionAppDeploymentContainer.id
     roleDefinitionId: storageAccountDataReaderRoleDefinition.id
+    principalType: 'ServicePrincipal'
   }
 }
+
+output functionAppName string = functionAppDeployment.outputs.name
+output functionAppResourceGroupName string = functionAppDeployment.outputs.resourceGroupName
