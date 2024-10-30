@@ -46,12 +46,13 @@ jobs:
           set -euo pipefail
 
           echo "Creating zip file..."
-          zip "$ZIP_FILE_PATH" \
-            "${{ github.workspace }}/src/functionapp/function_app.py" \
-            "${{ github.workspace }}/src/functionapp/function_app/host.json" \
-            "${{ github.workspace }}/src/functionapp/function_app/requirements.txt" \
-            "${{ github.workspace }}/src/functionapp/function_app/import_on_timer.py" \
-            "${{ github.workspace }}/src/functionapp/function_app/import_with_service_bus.py"
+          zip -r "$ZIP_FILE_PATH" \
+            "${{" github.workspace }}/src/functionapp" \
+            -i 'function_app.py' \
+            -i 'host.json' \
+            -i 'requirements.txt' \
+            -i 'import_on_timer.py' \
+            -i 'import_with_service_bus.py'
 
           echo "Publishing function app..."
           FUNCTION_APP_NAME=$("az stack sub show -n $DEPLOYMENT_STACK_NAME --query 'outputs.functionAppName.value' -o tsv")
