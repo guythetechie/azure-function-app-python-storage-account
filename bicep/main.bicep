@@ -10,30 +10,26 @@ param virtualNetworkName string = '${prefix}-vnet'
 param privateEndpointSubnetName string = 'private-endpoint-subnet'
 param vnetIntegrationSubnetName string = 'vnet-integration-subnet'
 param storageAccountName string = '${prefix}stor'
+param storageAccountContainerName string = 'blobs-container'
+param storageAccountQueueName string = 'blobs'
 param functionAppName string = '${prefix}-funcapp'
-param serviceBusNamespaceName string = '${prefix}-service-bus'
+param eventGridTopicName string = '${storageAccountName}-topic'
 param allowedIpAddressesSring string = ''
-param eventGridTopicName string = '${storageAccountName}-system-topic'
-param eventGridSubscriptionName string = 'on-blob-change'
 
-var functionAppDeploymentContainerName = '${functionAppName}-deployment'
-var storageAccountConnectionString = 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
 var allowedIpAddresses = map(split(allowedIpAddressesSring, ','), address => trim(address))
-var serviceBusEventGridSubscriptionTopicName = eventGridSubscriptionName
-var serviceBusEventGridSubscriptionTopicFunctionAppSubscriptionName = functionAppName
 
-resource storageAccountDataReaderRoleDefinition 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
+resource storageQueueDataMessageSenderRoleDefinition 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
+  name: 'c6a89b2d-59bc-44d0-9896-0f6e12d7b80a'
+  scope: subscription()
+}
+
+resource storageQueueDataReaderRoleDefinition 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
+  name: '19e7f393-937e-4f77-808e-94535e297925'
+  scope: subscription()
+}
+
+resource storageBlobDataReaderRoleDefinition 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   name: '2a2b9908-6ea1-4ae2-8e65-a410df84e7d1'
-  scope: subscription()
-}
-
-resource serviceBusDataReceiverRoleDefinition 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
-  name: '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0'
-  scope: subscription()
-}
-
-resource serviceBusDataSenderRoleDefinition 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
-  name: '69a216fc-b8fb-44d8-bc22-1f3c2cd27a39'
   scope: subscription()
 }
 
@@ -115,22 +111,24 @@ module blobPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.6.0' = {
     tags: tags
     virtualNetworkLinks: [
       {
+        name: virtualNetworkDeployment.outputs.name
         virtualNetworkResourceId: virtualNetworkDeployment.outputs.resourceId
       }
     ]
   }
 }
 
-module serviceBusPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.6.0' = {
+module queuePrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.6.0' = {
   scope: resourceGroup
-  name: 'service-bus-private-dns-zone-deployment'
+  name: 'queue-private-dns-zone-deployment'
   dependsOn: [resourceGroupDeployment]
   params: {
-    name: 'privatelink.servicebus.windows.net'
+    name: 'privatelink.queue.${environment().suffixes.storage}'
     location: 'global'
     tags: tags
     virtualNetworkLinks: [
       {
+        name: virtualNetworkDeployment.outputs.name
         virtualNetworkResourceId: virtualNetworkDeployment.outputs.resourceId
       }
     ]
@@ -171,9 +169,11 @@ module storageAccountDeployment 'br/public:avm/res/storage/storage-account:0.14.
         subnetResourceId: privateEndpointSubnet.id
         customNetworkInterfaceName: '${storageAccountName}-nic'
         tags: tags
+        privateLinkServiceConnectionName: '${storageAccountName}-blob'
         privateDnsZoneGroup: {
           privateDnsZoneGroupConfigs: [
             {
+              name: blobPrivateDnsZone.outputs.name
               privateDnsZoneResourceId: blobPrivateDnsZone.outputs.resourceId
             }
           ]
@@ -193,8 +193,39 @@ module storageAccountDeployment 'br/public:avm/res/storage/storage-account:0.14.
     blobServices: {
       containers: [
         {
-          name: functionAppDeploymentContainerName
+          name: storageAccountContainerName
           publicAccess: 'None'
+        }
+      ]
+      diagnosticSettings: [
+        {
+          name: 'enable-all'
+          logAnalyticsDestinationType: 'Dedicated'
+          logCategoriesAndGroups: [
+            {
+              categoryGroup: 'AllLogs'
+            }
+          ]
+          workspaceResourceId: logAnalyticsWorkspaceDeployment.outputs.resourceId
+        }
+      ]
+    }
+    queueServices: {
+      queues: [
+        {
+          name: storageAccountQueueName
+        }
+      ]
+      diagnosticSettings: [
+        {
+          name: 'enable-all'
+          logAnalyticsDestinationType: 'Dedicated'
+          logCategoriesAndGroups: [
+            {
+              categoryGroup: 'AllLogs'
+            }
+          ]
+          workspaceResourceId: logAnalyticsWorkspaceDeployment.outputs.resourceId
         }
       ]
     }
@@ -211,9 +242,19 @@ resource storageAccountBlobService 'Microsoft.Storage/storageAccounts/blobServic
   parent: storageAccount
 }
 
-resource storageAccountFunctionAppDeploymentContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-05-01' existing = {
-  name: functionAppDeploymentContainerName
+resource storageAccountContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-05-01' existing = {
+  name: storageAccountContainerName
   parent: storageAccountBlobService
+}
+
+resource storageAccountQueueService 'Microsoft.Storage/storageAccounts/queueServices@2023-05-01' existing = {
+  name: 'default'
+  parent: storageAccount
+}
+
+resource storageAccountQueue 'Microsoft.Storage/storageAccounts/queueServices/queues@2023-05-01' existing = {
+  name: storageAccountQueueName
+  parent: storageAccountQueueService
 }
 
 module appServicePlanDeployment 'br/public:avm/res/web/serverfarm:0.2.4' = {
@@ -252,36 +293,36 @@ module functionAppDeployment 'br/public:avm/res/web/site:0.10.0' = {
     siteConfig: {
       appSettings: [
         {
-          name: 'AzureWebJobsStorage'
-          value: storageAccountConnectionString
+          name: 'AzureWebJobsStorage__blobServiceUri'
+          value: storageAccount.properties.primaryEndpoints.blob
+        }
+        {
+          name: 'AzureWebJobsStorage__queueServiceUri'
+          value: storageAccount.properties.primaryEndpoints.queue
+        }
+        {
+          name: 'AzureWebJobsStorage__tableServiceUri'
+          value: storageAccount.properties.primaryEndpoints.table
         }
         {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
           value: applicationInsights.properties.ConnectionString
         }
         {
-          name: 'DEPLOYMENT_STORAGE_ACCOUNT_CONNECTION_STRING'
-          value: storageAccountConnectionString
+          name: 'STORAGE_ACCOUNT_CONNECTION__blobServiceUri'
+          value: storageAccount.properties.primaryEndpoints.blob
         }
         {
-          name: 'STORAGE_ACCOUNT_CONNECTION_STRING'
-          value: storageAccountConnectionString
+          name: 'STORAGE_ACCOUNT_CONNECTION__queueServiceUri'
+          value: storageAccount.properties.primaryEndpoints.queue
         }
         {
           name: 'STORAGE_ACCOUNT_CONTAINER_NAME'
-          value: functionAppDeploymentContainerName
+          value: storageAccountContainerName
         }
         {
-          name: 'SERVICE_BUS_CONNECTION__fullyQualifiedNamespace'
-          value: serviceBus.properties.serviceBusEndpoint
-        }
-        {
-          name: 'SERVICE_BUS_TOPIC_NAME'
-          value: serviceBusEventGridSubscriptionTopicName
-        }
-        {
-          name: 'SERVICE_BUS_SUBSCRIPTION_NAME'
-          value: serviceBusEventGridSubscriptionTopicFunctionAppSubscriptionName
+          name: 'STORAGE_ACCOUNT_QUEUE_NAME'
+          value: storageAccountQueueName
         }
       ]
       cors: {
@@ -298,10 +339,9 @@ module functionAppDeployment 'br/public:avm/res/web/site:0.10.0' = {
       deployment: {
         storage: {
           type: 'blobContainer'
-          value: uri(storageAccountDeployment.outputs.primaryBlobEndpoint, functionAppDeploymentContainerName)
+          value: uri(storageAccountDeployment.outputs.primaryBlobEndpoint, storageAccountContainerName)
           authentication: {
-            type: 'StorageAccountConnectionString'
-            storageAccountConnectionStringName: 'DEPLOYMENT_STORAGE_ACCOUNT_CONNECTION_STRING'
+            type: 'SystemAssignedIdentity'
           }
         }
       }
@@ -315,75 +355,6 @@ module functionAppDeployment 'br/public:avm/res/web/site:0.10.0' = {
       }
     }
   }
-}
-
-module serviceBusDeployment 'br/public:avm/res/service-bus/namespace:0.10.0' = {
-  scope: resourceGroup
-  name: 'service-bus-deployment'
-  dependsOn: [
-    resourceGroupDeployment
-    virtualNetworkDeployment
-    serviceBusPrivateDnsZone
-  ]
-  params: {
-    name: serviceBusNamespaceName
-    location: location
-    tags: tags
-    disableLocalAuth: true
-    networkRuleSets: {
-      defaultAction: 'Deny'
-      trustedServiceAccessEnabled: true
-      publicNetworkAccess: 'Disabled'
-      ipRules: empty(allowedIpAddresses)
-        ? null
-        : map(allowedIpAddresses, address => {
-            action: 'Allow'
-            ipMask: address
-          })
-    }
-    topics: [
-      {
-        name: serviceBusEventGridSubscriptionTopicName
-        subscriptions: [
-          {
-            name: serviceBusEventGridSubscriptionTopicFunctionAppSubscriptionName
-          }
-        ]
-      }
-    ]
-    privateEndpoints: [
-      {
-        name: '${serviceBusNamespaceName}-pep'
-        subnetResourceId: privateEndpointSubnet.id
-        customNetworkInterfaceName: '${serviceBusNamespaceName}-nic'
-        privateLinkServiceConnectionName: '${serviceBusNamespaceName}-namespace'
-        service: 'namespace'
-        privateDnsZoneGroup: {
-          privateDnsZoneGroupConfigs: [
-            {
-              name: serviceBusPrivateDnsZone.outputs.name
-              privateDnsZoneResourceId: serviceBusPrivateDnsZone.outputs.resourceId
-            }
-          ]
-        }
-      }
-    ]
-  }
-}
-
-resource serviceBus 'Microsoft.ServiceBus/namespaces@2023-01-01-preview' existing = {
-  name: serviceBusNamespaceName
-  scope: resourceGroup
-}
-
-resource serviceBusEventGridSubscriptionTopic 'Microsoft.ServiceBus/namespaces/topics@2023-01-01-preview' existing = {
-  name: serviceBusEventGridSubscriptionTopicName
-  parent: serviceBus
-}
-
-resource serviceBusEventGridSubscriptionTopicFunctionAppSubscription 'Microsoft.ServiceBus/namespaces/topics/subscriptions@2023-01-01-preview' existing = {
-  name: serviceBusEventGridSubscriptionTopicFunctionAppSubscriptionName
-  parent: serviceBusEventGridSubscriptionTopic
 }
 
 module eventGridSystemTopicDeployment 'br/public:avm/res/event-grid/system-topic:0.4.0' = {
@@ -413,47 +384,44 @@ module eventGridSystemTopicDeployment 'br/public:avm/res/event-grid/system-topic
   }
 }
 
-module eventGridServiceBusEventGridSubscriptionTopicRoleAssignment 'br/public:avm/ptn/authorization/resource-role-assignment:0.1.1' = {
+module eventGridStorageAccountRoleAssignment 'br/public:avm/ptn/authorization/resource-role-assignment:0.1.1' = {
   scope: resourceGroup
   dependsOn: [
-    serviceBusDeployment
+    storageAccountDeployment
   ]
   name: 'event-grid-service-bus-role-assignment'
   params: {
     principalId: eventGridSystemTopicDeployment.outputs.systemAssignedMIPrincipalId
-    resourceId: serviceBusEventGridSubscriptionTopic.id
-    roleDefinitionId: serviceBusDataSenderRoleDefinition.id
+    resourceId: storageAccountQueue.id
+    roleDefinitionId: storageQueueDataMessageSenderRoleDefinition.id
     principalType: 'ServicePrincipal'
   }
 }
 
-module functionAppServiceBusEventGridSubscriptionTopicFunctionAppSubscriptionRoleAssignment 'br/public:avm/ptn/authorization/resource-role-assignment:0.1.1' = {
-  scope: resourceGroup
-  name: 'function-app-service-bus-role-assignment'
-  dependsOn: [
-    serviceBusDeployment
-  ]
-  params: {
-    principalId: functionAppDeployment.outputs.systemAssignedMIPrincipalId
-    resourceId: serviceBusEventGridSubscriptionTopicFunctionAppSubscription.id
-    roleDefinitionId: serviceBusDataReceiverRoleDefinition.id
-    principalType: 'ServicePrincipal'
+module functionAppStorageAccountRoleAssignments 'br/public:avm/ptn/authorization/resource-role-assignment:0.1.1' = [
+  for (item, index) in [
+    {
+      resourceId: storageAccountContainer.id
+      roleDefinitionId: storageBlobDataReaderRoleDefinition.id
+    }
+    {
+      resourceId: storageAccountQueue.id
+      roleDefinitionId: storageQueueDataReaderRoleDefinition.id
+    }
+  ]: {
+    scope: resourceGroup
+    name: 'function-app-storage-account-role-assignment-${index}'
+    dependsOn: [
+      storageAccountDeployment
+    ]
+    params: {
+      principalId: functionAppDeployment.outputs.systemAssignedMIPrincipalId
+      resourceId: item.resourceId
+      roleDefinitionId: item.roleDefinitionId
+      principalType: 'ServicePrincipal'
+    }
   }
-}
-
-module functionAppStorageAccountFunctionAppDeploymentContainerRoleAssignment 'br/public:avm/ptn/authorization/resource-role-assignment:0.1.1' = {
-  scope: resourceGroup
-  name: 'function-app-storage-account-role-assignment'
-  dependsOn: [
-    storageAccountDeployment
-  ]
-  params: {
-    principalId: functionAppDeployment.outputs.systemAssignedMIPrincipalId
-    resourceId: storageAccountFunctionAppDeploymentContainer.id
-    roleDefinitionId: storageAccountDataReaderRoleDefinition.id
-    principalType: 'ServicePrincipal'
-  }
-}
+]
 
 output functionAppName string = functionAppDeployment.outputs.name
 output functionAppResourceGroupName string = functionAppDeployment.outputs.resourceGroupName

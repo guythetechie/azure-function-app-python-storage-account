@@ -48,15 +48,15 @@ jobs:
           echo "Creating zip file..."
           zip -r "$ZIP_FILE_PATH" \
             "${{ github.workspace }}/src/functionapp" \
-            -i 'function_app.py' \
-            -i 'host.json' \
-            -i 'requirements.txt' \
-            -i 'import_on_timer.py' \
-            -i 'import_with_service_bus.py'
+            -i 'function_app.py*' \
+            -i 'host.json*' \
+            -i 'requirements.txt*' \
+            -i 'import_on_timer.py*' \
+            -i 'import_with_service_bus.py*'
 
           echo "Publishing function app..."
-          FUNCTION_APP_NAME=$("az stack sub show -n $DEPLOYMENT_STACK_NAME --query 'outputs.functionAppName.value' -o tsv")
-          RESOURCE_GROUP_NAME=$("az stack sub show -n $DEPLOYMENT_STACK_NAME --query 'outputs.functionAppResourceGroupName.value' -o tsv")
+          FUNCTION_APP_NAME=$(az stack sub show -n $DEPLOYMENT_STACK_NAME --query 'outputs.functionAppName.value' -o tsv)
+          RESOURCE_GROUP_NAME=$(az stack sub show -n $DEPLOYMENT_STACK_NAME --query 'outputs.functionAppResourceGroupName.value' -o tsv)
           az functionapp deployment source config-zip \
             --name "$FUNCTION_APP_NAME" \
             --resource-group "$RESOURCE_GROUP_NAME" \
