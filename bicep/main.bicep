@@ -238,12 +238,16 @@ module functionAppDeployment 'br/public:avm/res/web/site:0.10.0' = {
     virtualNetworkDeployment
     storageAccountDeployment
     applicationInsightsDeployment
+    serviceBusDeployment
   ]
   params: {
     name: functionAppName
     location: location
     tags: tags
     kind: 'functionapp,linux'
+    managedIdentities: {
+      systemAssigned: true
+    }
     serverFarmResourceId: appServicePlanDeployment.outputs.resourceId
     siteConfig: {
       appSettings: [
@@ -262,6 +266,18 @@ module functionAppDeployment 'br/public:avm/res/web/site:0.10.0' = {
         {
           name: 'STORAGE_ACCOUNT_CONTAINER_NAME'
           value: functionAppDeploymentContainerName
+        }
+        {
+          name: 'SERVICE_BUS_CONNECTION__fullyQualifiedNamespace'
+          value: serviceBus.properties.serviceBusEndpoint
+        }
+        {
+          name: 'SERVICE_BUS_TOPIC_NAME'
+          value: serviceBusEventGridSubscriptionTopicName
+        }
+        {
+          name: 'SERVICE_BUS_SUBSCRIPTION_NAME'
+          value: serviceBusEventGridSubscriptionTopicFunctionAppSubscriptionName
         }
       ]
       cors: {
