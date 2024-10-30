@@ -47,7 +47,7 @@ jobs:
 
           echo "Creating zip file..."
           zip -r "$ZIP_FILE_PATH" \
-            "${{" github.workspace }}/src/functionapp" \
+            "${{ github.workspace }}/src/functionapp" \
             -i 'function_app.py' \
             -i 'host.json' \
             -i 'requirements.txt' \
