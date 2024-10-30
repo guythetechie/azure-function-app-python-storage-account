@@ -202,7 +202,7 @@ module storageAccountDeployment 'br/public:avm/res/storage/storage-account:0.14.
 }
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
-  name: storageAccountDeployment.outputs.name
+  name: storageAccountName
   scope: resourceGroup
 }
 
@@ -300,6 +300,11 @@ module functionAppDeployment 'br/public:avm/res/web/site:0.10.0' = {
 module serviceBusDeployment 'br/public:avm/res/service-bus/namespace:0.10.0' = {
   scope: resourceGroup
   name: 'service-bus-deployment'
+  dependsOn: [
+    resourceGroupDeployment
+    virtualNetworkDeployment
+    serviceBusPrivateDnsZone
+  ]
   params: {
     name: serviceBusNamespaceName
     location: location
@@ -347,7 +352,7 @@ module serviceBusDeployment 'br/public:avm/res/service-bus/namespace:0.10.0' = {
 }
 
 resource serviceBus 'Microsoft.ServiceBus/namespaces@2023-01-01-preview' existing = {
-  name: serviceBusDeployment.outputs.name
+  name: serviceBusNamespaceName
   scope: resourceGroup
 }
 
@@ -390,6 +395,9 @@ module eventGridSystemTopicDeployment 'br/public:avm/res/event-grid/system-topic
 
 module eventGridServiceBusEventGridSubscriptionTopicRoleAssignment 'br/public:avm/ptn/authorization/resource-role-assignment:0.1.1' = {
   scope: resourceGroup
+  dependsOn: [
+    serviceBusDeployment
+  ]
   name: 'event-grid-service-bus-role-assignment'
   params: {
     principalId: eventGridSystemTopicDeployment.outputs.systemAssignedMIPrincipalId
@@ -401,6 +409,9 @@ module eventGridServiceBusEventGridSubscriptionTopicRoleAssignment 'br/public:av
 module functionAppServiceBusEventGridSubscriptionTopicFunctionAppSubscriptionRoleAssignment 'br/public:avm/ptn/authorization/resource-role-assignment:0.1.1' = {
   scope: resourceGroup
   name: 'function-app-service-bus-role-assignment'
+  dependsOn: [
+    serviceBusDeployment
+  ]
   params: {
     principalId: functionAppDeployment.outputs.systemAssignedMIPrincipalId
     resourceId: serviceBusEventGridSubscriptionTopicFunctionAppSubscription.id
@@ -411,6 +422,9 @@ module functionAppServiceBusEventGridSubscriptionTopicFunctionAppSubscriptionRol
 module functionAppStorageAccountFunctionAppDeploymentContainerRoleAssignment 'br/public:avm/ptn/authorization/resource-role-assignment:0.1.1' = {
   scope: resourceGroup
   name: 'function-app-storage-account-role-assignment'
+  dependsOn: [
+    storageAccountDeployment
+  ]
   params: {
     principalId: functionAppDeployment.outputs.systemAssignedMIPrincipalId
     resourceId: storageAccountFunctionAppDeploymentContainer.id
