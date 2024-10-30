@@ -2,7 +2,7 @@ targetScope = 'subscription'
 
 param location string
 param tags object = {}
-param prefix string = uniqueString(subscription().id, '2')
+param prefix string = 'pmobidl${take(uniqueString(subscription().id, '2'), 6)}'
 param resourceGroupName string = '${prefix}-rg'
 param logAnalyticsWorkspaceName string = '${prefix}-law'
 param applicationInsightsName string = '${prefix}-appinsights'
@@ -225,7 +225,9 @@ module functionAppDeployment 'br/public:avm/res/web/site:0.10.0' = {
         ]
       }
     }
-    vnetRouteAllEnabled: true
+    vnetRouteAllEnabled: false
+    vnetContentShareEnabled: true
+    vnetImagePullEnabled: true
     virtualNetworkSubnetId: vnetIntegrationSubnet.id
     functionAppConfig: {
       deployment: {
