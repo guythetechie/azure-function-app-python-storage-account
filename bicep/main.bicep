@@ -11,10 +11,14 @@ param privateEndpointSubnetName string = 'private-endpoint-subnet'
 param vnetIntegrationSubnetName string = 'vnet-integration-subnet'
 param storageAccountName string = '${prefix}stor'
 param functionAppName string = '${prefix}-funcapp'
-param allowedIpAddress string = ''
+param serviceBusNamespaceName string = '${prefix}-service-bus'
+param allowedIpAddressesSring string = ''
+param eventGridTopicName string = '${storageAccountName}-system-topic'
+param eventGridSubscriptionName string = 'on-blob-change'
 
 var functionAppDeploymentContainerName = '${functionAppName}-deployment'
 var storageAccountConnectionString = 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
+var allowedIpAddresses = map(split(allowedIpAddressesSring, ','), address => trim(address))
 
 module resourceGroupDeployment 'br/public:avm/res/resources/resource-group:0.4.0' = {
   scope: subscription()
@@ -84,12 +88,28 @@ module virtualNetworkDeployment 'br/public:avm/res/network/virtual-network:0.4.0
   }
 }
 
-module privateDnsZone 'br/public:avm/res/network/private-dns-zone:0.6.0' = {
+module blobPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.6.0' = {
   scope: resourceGroup
   name: 'blob-private-dns-zone-deployment'
   dependsOn: [resourceGroupDeployment]
   params: {
     name: 'privatelink.blob.${environment().suffixes.storage}'
+    location: 'global'
+    tags: tags
+    virtualNetworkLinks: [
+      {
+        virtualNetworkResourceId: virtualNetworkDeployment.outputs.resourceId
+      }
+    ]
+  }
+}
+
+module serviceBusPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.6.0' = {
+  scope: resourceGroup
+  name: 'service-bus-private-dns-zone-deployment'
+  dependsOn: [resourceGroupDeployment]
+  params: {
+    name: 'privatelink.servicebus.windows.net'
     location: 'global'
     tags: tags
     virtualNetworkLinks: [
@@ -137,7 +157,7 @@ module storageAccountDeployment 'br/public:avm/res/storage/storage-account:0.14.
         privateDnsZoneGroup: {
           privateDnsZoneGroupConfigs: [
             {
-              privateDnsZoneResourceId: privateDnsZone.outputs.resourceId
+              privateDnsZoneResourceId: blobPrivateDnsZone.outputs.resourceId
             }
           ]
         }
@@ -146,14 +166,12 @@ module storageAccountDeployment 'br/public:avm/res/storage/storage-account:0.14.
     networkAcls: {
       bypass: 'AzureServices, Logging, Metrics'
       defaultAction: 'Deny'
-      ipRules: empty(allowedIpAddress)
+      ipRules: empty(allowedIpAddresses)
         ? null
-        : [
-            {
-              action: 'Allow'
-              value: allowedIpAddress
-            }
-          ]
+        : map(allowedIpAddresses, address => {
+            action: 'Allow'
+            value: address
+          })
     }
     blobServices: {
       containers: [
@@ -249,5 +267,78 @@ module functionAppDeployment 'br/public:avm/res/web/site:0.10.0' = {
         version: '3.11'
       }
     }
+  }
+}
+
+module serviceBusDeployment 'br/public:avm/res/service-bus/namespace:0.10.0' = {
+  scope: resourceGroup
+  name: 'service-bus-deployment'
+  params: {
+    name: serviceBusNamespaceName
+    location: location
+    tags: tags
+    disableLocalAuth: true
+    networkRuleSets: {
+      defaultAction: 'Deny'
+      trustedServiceAccessEnabled: true
+      publicNetworkAccess: 'Disabled'
+      ipRules: empty(allowedIpAddresses)
+        ? null
+        : map(allowedIpAddresses, address => {
+            action: 'Allow'
+            ipMask: address
+          })
+    }
+    topics: [
+      {
+        name: eventGridSubscriptionName
+        subscriptions: [
+          {
+            name: functionAppName
+          }
+        ]
+      }
+    ]
+    privateEndpoints: [
+      {
+        name: '${serviceBusNamespaceName}-pep'
+        subnetResourceId: privateEndpointSubnet.id
+        customNetworkInterfaceName: '${serviceBusNamespaceName}-nic'
+        privateLinkServiceConnectionName: '${serviceBusNamespaceName}-namespace'
+        service: 'namespace'
+        privateDnsZoneGroup: {
+          privateDnsZoneGroupConfigs: [
+            {
+              name: serviceBusPrivateDnsZone.outputs.name
+              privateDnsZoneResourceId: serviceBusPrivateDnsZone.outputs.resourceId
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+
+module eventGridSystemTopicDeployment 'br/public:avm/res/event-grid/system-topic:0.4.0' = {
+  scope: resourceGroup
+  name: 'event-grid-system-topic-deployment'
+  params: {
+    name: eventGridTopicName
+    location: location
+    tags: tags
+    source: storageAccountDeployment.outputs.resourceId
+    topicType: 'Microsoft.Storage.StorageAccounts'
+    diagnosticSettings: [
+      {
+        name: 'enable-all'
+        logAnalyticsDestinationType: 'Dedicated'
+        logCategoriesAndGroups: [
+          {
+            categoryGroup: 'AllLogs'
+          }
+        ]
+        workspaceResourceId: logAnalyticsWorkspaceDeployment.outputs.resourceId
+      }
+    ]
   }
 }

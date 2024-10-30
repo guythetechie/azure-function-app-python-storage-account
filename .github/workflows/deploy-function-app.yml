@@ -20,9 +20,10 @@ jobs:
       - name: Deploy Bicep file
         shell: bash
         env:
+          ALLOWED_IP_ADDRESSES: ${{ vars.ALLOWED_IP_ADDRESSES }}
           AZURE_LOCATION: eastus
           ACTION_ON_UNMANAGE: deleteAll
-          DEPLOYMENT_STACK_NAME: deploy-python-function-app
+          DEPLOYMENT_STACK_NAME: deploy-python-function-app2
           TEMPLATE_FILE_PATH: "${{ github.workspace }}/bicep/main.bicep"
           TEMPLATE_PARAMETER_FILE_PATH: "${{ github.workspace }}/bicep/main.bicepparam"
         run: |
