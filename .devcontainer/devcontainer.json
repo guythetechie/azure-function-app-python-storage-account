@@ -21,7 +21,8 @@
 				"ms-azuretools.vscode-azurefunctions",
 				"GitHub.copilot",
 				"timonwong.shellcheck",
-				"foxundermoon.shell-format"
+				"foxundermoon.shell-format",
+				"redhat.vscode-yaml"
 			]
 		}
 	}

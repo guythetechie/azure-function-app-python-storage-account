@@ -16,9 +16,11 @@ fi
 echo "Deploying resources..."
 az stack sub create \
     --action-on-unmanage deleteAll \
-    --name "deploy-python-function-app2" \
+    --name "deploy-python-function-app3" \
     --deny-settings-mode none \
     --location "$AZURE_LOCATION" \
     --template-file "./bicep/main.bicep" \
     --parameters location="$AZURE_LOCATION" \
     --parameters allowedIpAddress="$(curl -s ipinfo.io/ip)"
+
+echo "Creating deployment package..."
