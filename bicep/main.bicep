@@ -387,7 +387,7 @@ module functionAppServiceBusEventGridSubscriptionTopicFunctionAppSubscriptionRol
   scope: resourceGroup
   name: 'function-app-service-bus-event-grid-subscription-topic-function-app-subscription-role-assignment'
   params: {
-    principalId: functionAppDeployment.outputs.identity.principalId
+    principalId: functionAppDeployment.outputs.systemAssignedMIPrincipalId
     resourceId: serviceBusEventGridSubscriptionTopicFunctionAppSubscription.id
     roleDefinitionId: serviceBusDataReceiverRoleDefinition.id
   }
