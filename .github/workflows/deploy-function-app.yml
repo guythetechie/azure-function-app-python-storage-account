@@ -55,10 +55,19 @@ jobs:
             -i '*functionapp/import_on_timer.py' \
             -i '*functionapp/import_with_service_bus.py'
 
-          echo "Giving service principal permissions to deploy to the storage container..."
+          echo "Giving network access to storage account..."
+          PUBLIC_IP_ADDRESS=$(curl ipinfo.io/ip)
           DEPLOYMENT_STACK=$(az stack sub show -n "$DEPLOYMENT_STACK_NAME")
           RESOURCE_GROUP_NAME=$(echo "$DEPLOYMENT_STACK" | jq -r '.outputs.resourceGroupName.value')
           STORAGE_ACCOUNT_NAME=$(echo "$DEPLOYMENT_STACK" | jq -r '.outputs.storageAccountName.value')
+          az storage account network-rule add \
+            --resource-group "$RESOURCE_GROUP_NAME" \
+            --account-name "$STORAGE_ACCOUNT_NAME" \
+            --ip-address "$PUBLIC_IP_ADDRESS" \
+            --action Allow
+          sleep 30
+
+          echo "Giving permissions to deploy to the storage container..."
           STORAGE_ACCOUNT_CONTAINER_NAME=$(echo "$DEPLOYMENT_STACK" | jq -r '.outputs.storageAccountContainerName.value')
           STORAGE_ACCOUNT_CONTAINER_RESOURCE_ID=$(az storage container show \
             --name "$STORAGE_ACCOUNT_CONTAINER_NAME" \
@@ -78,3 +87,9 @@ jobs:
             --name "$FUNCTION_APP_NAME" \
             --resource-group "$RESOURCE_GROUP_NAME" \
             --src "$ZIP_FILE_PATH"
+
+          echo "Removing network access..."
+          az storage account network-rule remove \
+            --resource-group "$RESOURCE_GROUP_NAME" \
+            --account-name "$STORAGE_ACCOUNT_NAME" \
+            --ip-address "$PUBLIC_IP_ADDRESS"

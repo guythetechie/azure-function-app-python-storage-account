@@ -383,6 +383,17 @@ module eventGridSystemTopicDeployment 'br/public:avm/res/event-grid/system-topic
   }
 }
 
+module eventGridSubscriptionDeployment 'event-subscription.bicep' = {
+  name: 'event-grid-subscription-deployment'
+  scope: resourceGroup
+  dependsOn: [eventGridStorageAccountRoleAssignment]
+  params: {
+    eventGridTopicName: eventGridSystemTopicDeployment.outputs.name
+    storageAccountName: storageAccountDeployment.outputs.name
+    storageAccountQueueName: storageAccountQueue.name
+  }
+}
+
 module eventGridStorageAccountRoleAssignment 'br/public:avm/ptn/authorization/resource-role-assignment:0.1.1' = {
   scope: resourceGroup
   name: 'event-grid-service-bus-role-assignment'
