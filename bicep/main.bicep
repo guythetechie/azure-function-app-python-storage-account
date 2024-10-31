@@ -313,6 +313,14 @@ module functionAppDeployment 'br/public:avm/res/web/site:0.10.0' = {
           value: applicationInsights.properties.ConnectionString
         }
         {
+          name: 'FUNCTIONS_WORKER_RUNTIME'
+          value: 'python'
+        }
+        {
+          name: 'FUNCTIONS_EXTENSION_VERSION'
+          value: '~4'
+        }
+        {
           name: 'STORAGE_ACCOUNT_CONNECTION__blobServiceUri'
           value: storageAccount.properties.primaryEndpoints.blob
         }
