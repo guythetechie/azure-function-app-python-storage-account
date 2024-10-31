@@ -401,7 +401,7 @@ module eventGridSubscriptionDeployment 'event-subscription.bicep' = {
 
 module eventGridStorageAccountRoleAssignment 'br/public:avm/ptn/authorization/resource-role-assignment:0.1.1' = {
   scope: resourceGroup
-  name: 'event-grid-service-bus-role-assignment'
+  name: 'event-grid-storage-account-role-assignment'
   params: {
     principalId: eventGridSystemTopicDeployment.outputs.systemAssignedMIPrincipalId
     resourceId: storageAccount.id
