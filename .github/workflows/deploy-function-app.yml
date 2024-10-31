@@ -72,6 +72,7 @@ jobs:
             --role "Storage Blob Data Contributor" \
             --assignee "$AZURE_CLIENT_ID" \
             --scope "$STORAGE_ACCOUNT_CONTAINER_RESOURCE_ID"
+          sleep 120
 
           echo "Publishing function app..."
           FUNCTION_APP_NAME=$(echo "$DEPLOYMENT_STACK" | jq -r '.outputs.functionAppName.value')
