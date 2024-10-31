@@ -28,11 +28,6 @@ resource storageQueueDataReaderRoleDefinition 'Microsoft.Authorization/roleDefin
   scope: subscription()
 }
 
-resource storageBlobDataReaderRoleDefinition 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
-  name: '2a2b9908-6ea1-4ae2-8e65-a410df84e7d1'
-  scope: subscription()
-}
-
 resource storageBlobDataOwnerRoleDefinition 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   name: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
   scope: subscription()
