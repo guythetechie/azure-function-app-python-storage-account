@@ -40,6 +40,7 @@ jobs:
             --yes
       - name: Publish function app
         env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           DEPLOYMENT_STACK_NAME: ${{ vars.DEPLOYMENT_STACK_NAME }}
           ZIP_FILE_PATH: ${{ runner.temp }}/function-app.zip
         run: |
@@ -53,6 +54,22 @@ jobs:
             -i '*functionapp/requirements.txt' \
             -i '*functionapp/import_on_timer.py' \
             -i '*functionapp/import_with_service_bus.py'
+
+          echo "Giving service principal permissions to deploy to the storage container..."
+          DEPLOYMENT_STACK=$(az stack sub show -n "$DEPLOYMENT_STACK_NAME")
+          RESOURCE_GROUP_NAME=$(echo "$DEPLOYMENT_STACK" | jq -r '.outputs.resourceGroupName.value')
+          STORAGE_ACCOUNT_NAME=$(echo "$DEPLOYMENT_STACK" | jq -r '.outputs.storageAccountName.value')
+          STORAGE_ACCOUNT_CONTAINER_NAME=$(echo "$DEPLOYMENT_STACK" | jq -r '.outputs.storageAccountContainerName.value')
+          STORAGE_ACCOUNT_CONTAINER_RESOURCE_ID=$(az storage container show \
+            --name "$STORAGE_ACCOUNT_CONTAINER_NAME" \
+            --account-name "$STORAGE_ACCOUNT_NAME" \
+            --query 'id'
+            -o tsv)
+
+          az role assignment create \
+            --role "Storage Blob Data Contributor" \
+            --assignee "$AZURE_CLIENT_ID" \
+            --scope "$STORAGE_ACCOUNT_CONTAINER_RESOURCE_ID"
 
           echo "Publishing function app..."
           FUNCTION_APP_NAME=$(az stack sub show -n $DEPLOYMENT_STACK_NAME --query 'outputs.functionAppName.value' -o tsv)

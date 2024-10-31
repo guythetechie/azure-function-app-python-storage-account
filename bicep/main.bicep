@@ -419,5 +419,7 @@ module functionAppStorageAccountRoleAssignments 'br/public:avm/ptn/authorization
   }
 ]
 
+output resourceGroupName string = resourceGroup.name
 output functionAppName string = functionAppDeployment.outputs.name
-output functionAppResourceGroupName string = functionAppDeployment.outputs.resourceGroupName
+output storageAccountName string = storageAccount.name
+output storageAccountContainerName string = storageAccountContainer.name
