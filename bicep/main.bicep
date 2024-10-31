@@ -399,7 +399,7 @@ module eventGridStorageAccountRoleAssignment 'br/public:avm/ptn/authorization/re
   name: 'event-grid-service-bus-role-assignment'
   params: {
     principalId: eventGridSystemTopicDeployment.outputs.systemAssignedMIPrincipalId
-    resourceId: storageAccountQueue.id
+    resourceId: storageAccount.id
     roleDefinitionId: storageQueueDataMessageSenderRoleDefinition.id
     principalType: 'ServicePrincipal'
   }
