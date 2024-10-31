@@ -10,7 +10,7 @@ blueprint = func.Blueprint()
 @blueprint.timer_trigger(schedule="0 0 0 * * *",
                          arg_name="timer",
                          run_on_startup=False)
-def main(timer: func.TimerRequest) -> None:
+def main1(timer: func.TimerRequest) -> None:
     logging.info("Creating blob service client...")
     storage_account_connection_string = os.getenv(
         "STORAGE_ACCOUNT_CONNECTION_STRING")

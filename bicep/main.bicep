@@ -413,7 +413,7 @@ module functionAppStorageAccountRoleAssignments 'br/public:avm/ptn/authorization
       roleDefinitionId: storageBlobDataOwnerRoleDefinition.id
     }
     {
-      resourceId: storageAccountQueue.id
+      resourceId: storageAccount.id
       roleDefinitionId: storageQueueDataReaderRoleDefinition.id
     }
   ]: {

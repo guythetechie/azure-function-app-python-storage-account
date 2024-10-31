@@ -9,13 +9,13 @@ blueprint = func.Blueprint()
 
 @blueprint.function_name(name="import_with_storage_queue")
 @blueprint.queue_trigger(arg_name="message",
-                         queue_name="%STORAGE_QUEUE_NAME%",
+                         queue_name="blobs",
                          connection="STORAGE_ACCOUNT_CONNECTION")
 def main(message: func.QueueMessage) -> None:
     logging.info(f"Message content: {message.get_body().decode("utf-8")}")
 
-    event = json.loads(message.get_body())
-    blobUrl = event["data"]["url"]
+    body = json.loads(message.get_body())
+    blobUrl = body["data"]["url"]
     logging.info(f"Blob URL: {blobUrl}")
 
     credential = identity.DefaultAzureCredential()
