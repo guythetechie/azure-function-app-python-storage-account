@@ -24,14 +24,14 @@ resource eventSubscription 'Microsoft.EventGrid/systemTopics/eventSubscriptions@
   name: '${storageAccount.name}-${storageAccountQueue.name}'
   parent: eventGridTopic
   properties: {
-    destination: {
-      properties: {
-        queueName: storageAccountQueue.name
-        resourceId: storageAccount.id
-      }
-      endpointType: 'StorageQueue'
-    }
     deliveryWithResourceIdentity: {
+      destination: {
+        properties: {
+          queueName: storageAccountQueue.name
+          resourceId: storageAccount.id
+        }
+        endpointType: 'StorageQueue'
+      }
       identity: {
         type: 'SystemAssigned'
       }
