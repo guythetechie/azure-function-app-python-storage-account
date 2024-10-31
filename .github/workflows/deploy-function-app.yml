@@ -53,7 +53,7 @@ jobs:
             -i '*functionapp/host.json' \
             -i '*functionapp/requirements.txt' \
             -i '*functionapp/import_on_timer.py' \
-            -i '*functionapp/import_with_service_bus.py' \
+            -i '*functionapp/import_with_storage_queue.py' \
             --junk-paths
 
           echo "Publishing function app..."
