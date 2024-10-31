@@ -33,8 +33,8 @@ resource storageBlobDataReaderRoleDefinition 'Microsoft.Authorization/roleDefini
   scope: subscription()
 }
 
-resource storageBlobDataContributorRoleDefinition 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
-  name: 'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
+resource storageBlobDataOwnerRoleDefinition 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
+  name: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
   scope: subscription()
 }
 
@@ -413,12 +413,8 @@ module eventGridStorageAccountRoleAssignment 'br/public:avm/ptn/authorization/re
 module functionAppStorageAccountRoleAssignments 'br/public:avm/ptn/authorization/resource-role-assignment:0.1.1' = [
   for (item, index) in [
     {
-      resourceId: storageAccountContainer.id
-      roleDefinitionId: storageBlobDataReaderRoleDefinition.id
-    }
-    {
-      resourceId: storageAccountContainer.id
-      roleDefinitionId: storageBlobDataContributorRoleDefinition.id
+      resourceId: storageAccount.id
+      roleDefinitionId: storageBlobDataOwnerRoleDefinition.id
     }
     {
       resourceId: storageAccountQueue.id
