@@ -1,4 +1,5 @@
 param storageAccountName string
+param containerNameFilter string
 param storageAccountQueueName string
 param eventGridTopicName string
 
@@ -38,6 +39,7 @@ resource eventSubscription 'Microsoft.EventGrid/systemTopics/eventSubscriptions@
       }
     }
     filter: {
+      subjectBeginsWith: '/blobServices/default/containers/${containerNameFilter}'
       includedEventTypes: [
         'Microsoft.Storage.BlobCreated'
         'Microsoft.Storage.BlobDeleted'

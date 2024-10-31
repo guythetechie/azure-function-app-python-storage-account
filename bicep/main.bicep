@@ -308,10 +308,6 @@ module functionAppDeployment 'br/public:avm/res/web/site:0.10.0' = {
           value: applicationInsights.properties.ConnectionString
         }
         {
-          name: 'FUNCTIONS_EXTENSION_VERSION'
-          value: '~4'
-        }
-        {
           name: 'STORAGE_ACCOUNT_CONNECTION__blobServiceUri'
           value: storageAccount.properties.primaryEndpoints.blob
         }
@@ -395,6 +391,7 @@ module eventGridSubscriptionDeployment 'event-subscription.bicep' = {
     eventGridTopicName: eventGridSystemTopicDeployment.outputs.name
     storageAccountName: storageAccountDeployment.outputs.name
     storageAccountQueueName: storageAccountQueue.name
+    containerNameFilter: storageAccountContainerName
   }
 }
 
