@@ -31,6 +31,11 @@ resource eventSubscription 'Microsoft.EventGrid/systemTopics/eventSubscriptions@
       }
       endpointType: 'StorageQueue'
     }
+    deliveryWithResourceIdentity: {
+      identity: {
+        type: 'SystemAssigned'
+      }
+    }
     filter: {
       includedEventTypes: [
         'Microsoft.Storage.BlobCreated'

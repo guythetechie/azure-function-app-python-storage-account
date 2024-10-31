@@ -73,7 +73,7 @@ jobs:
             --name "$STORAGE_ACCOUNT_CONTAINER_NAME" \
             --account-name "$STORAGE_ACCOUNT_NAME" \
             --auth-mode login \
-            --query 'id'
+            --query 'id' \
             -o tsv)
 
           az role assignment create \
