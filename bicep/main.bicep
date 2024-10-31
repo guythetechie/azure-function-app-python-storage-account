@@ -434,3 +434,4 @@ output resourceGroupName string = resourceGroup.name
 output functionAppName string = functionAppDeployment.outputs.name
 output storageAccountName string = storageAccount.name
 output storageAccountContainerName string = storageAccountContainer.name
+output storageAccountContainerResourceId string = storageAccountContainer.id

@@ -65,17 +65,9 @@ jobs:
             --account-name "$STORAGE_ACCOUNT_NAME" \
             --ip-address "$PUBLIC_IP_ADDRESS" \
             --action Allow
-          sleep 120
 
           echo "Giving permissions to deploy to the storage container..."
-          STORAGE_ACCOUNT_CONTAINER_NAME=$(echo "$DEPLOYMENT_STACK" | jq -r '.outputs.storageAccountContainerName.value')
-          STORAGE_ACCOUNT_CONTAINER_RESOURCE_ID=$(az storage container show \
-            --name "$STORAGE_ACCOUNT_CONTAINER_NAME" \
-            --account-name "$STORAGE_ACCOUNT_NAME" \
-            --auth-mode login \
-            --query 'id' \
-            -o tsv)
-
+          STORAGE_ACCOUNT_CONTAINER_RESOURCE_ID=$(echo "$DEPLOYMENT_STACK" | jq -r '.outputs.storageAccountContainerResourceId.value')
           az role assignment create \
             --role "Storage Blob Data Contributor" \
             --assignee "$AZURE_CLIENT_ID" \
