@@ -1,5 +1,5 @@
 import azure.functions as func
-from functionapp.import_with_service_bus import blueprint as service_bus_blueprint
+from functionapp.import_with_storage_queue import blueprint as service_bus_blueprint
 from import_on_timer import blueprint as timer_blueprint
 
 app = func.App()

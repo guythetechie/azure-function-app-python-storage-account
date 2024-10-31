@@ -1,17 +1,15 @@
 import logging
 import azure.functions as func
-import os
 import azure.storage.blob as blob
 
 blueprint = func.Blueprint()
 
 
-@blueprint.function_name(name="import_with_service_bus")
-@blueprint.service_bus_topic_trigger(arg_name="message",
-                                     topic_name="%SERVICE_BUS_TOPIC_NAME%",
-                                     subscription_name="%SERVICE_BUS_SUBSCRIPTION_NAME%",
-                                     connection="SERVICE_BUS_CONNECTION")
-def main(message: func.ServiceBusMessage) -> None:
+@blueprint.function_name(name="import_with_storage_queue")
+@blueprint.queue_trigger(arg_name="message",
+                         queue_name="%STORAGE_QUEUE_NAME%",
+                         connection="STORAGE_ACCOUNT_CONNECTION")
+def main(message: func.QueueMessage) -> None:
     # logging.info("Creating blob service client...")
     # storage_account_connection_string = os.getenv(
     #     "STORAGE_ACCOUNT_CONNECTION_STRING")
