@@ -55,24 +55,24 @@ jobs:
             -i '*functionapp/import_on_timer.py' \
             -i '*functionapp/import_with_service_bus.py'
 
-          echo "Giving network access to storage account..."
-          PUBLIC_IP_ADDRESS=$(curl ipinfo.io/ip)
-          DEPLOYMENT_STACK=$(az stack sub show -n "$DEPLOYMENT_STACK_NAME")
-          RESOURCE_GROUP_NAME=$(echo "$DEPLOYMENT_STACK" | jq -r '.outputs.resourceGroupName.value')
-          STORAGE_ACCOUNT_NAME=$(echo "$DEPLOYMENT_STACK" | jq -r '.outputs.storageAccountName.value')
-          az storage account network-rule add \
-            --resource-group "$RESOURCE_GROUP_NAME" \
-            --account-name "$STORAGE_ACCOUNT_NAME" \
-            --ip-address "$PUBLIC_IP_ADDRESS" \
-            --action Allow
+          # echo "Giving network access to storage account..."
+          # PUBLIC_IP_ADDRESS=$(curl ipinfo.io/ip)
+          # DEPLOYMENT_STACK=$(az stack sub show -n "$DEPLOYMENT_STACK_NAME")
+          # RESOURCE_GROUP_NAME=$(echo "$DEPLOYMENT_STACK" | jq -r '.outputs.resourceGroupName.value')
+          # STORAGE_ACCOUNT_NAME=$(echo "$DEPLOYMENT_STACK" | jq -r '.outputs.storageAccountName.value')
+          # az storage account network-rule add \
+          #   --resource-group "$RESOURCE_GROUP_NAME" \
+          #   --account-name "$STORAGE_ACCOUNT_NAME" \
+          #   --ip-address "$PUBLIC_IP_ADDRESS" \
+          #   --action Allow
 
-          echo "Giving permissions to deploy to the storage container..."
-          STORAGE_ACCOUNT_CONTAINER_RESOURCE_ID=$(echo "$DEPLOYMENT_STACK" | jq -r '.outputs.storageAccountContainerResourceId.value')
-          az role assignment create \
-            --role "Storage Blob Data Contributor" \
-            --assignee "$AZURE_CLIENT_ID" \
-            --scope "$STORAGE_ACCOUNT_CONTAINER_RESOURCE_ID"
-          sleep 120
+          # echo "Giving permissions to deploy to the storage container..."
+          # STORAGE_ACCOUNT_CONTAINER_RESOURCE_ID=$(echo "$DEPLOYMENT_STACK" | jq -r '.outputs.storageAccountContainerResourceId.value')
+          # az role assignment create \
+          #   --role "Storage Blob Data Contributor" \
+          #   --assignee "$AZURE_CLIENT_ID" \
+          #   --scope "$STORAGE_ACCOUNT_CONTAINER_RESOURCE_ID"
+          # sleep 120
 
           echo "Publishing function app..."
           FUNCTION_APP_NAME=$(echo "$DEPLOYMENT_STACK" | jq -r '.outputs.functionAppName.value')
@@ -81,8 +81,8 @@ jobs:
             --resource-group "$RESOURCE_GROUP_NAME" \
             --src "$ZIP_FILE_PATH"
 
-          echo "Removing network access..."
-          az storage account network-rule remove \
-            --resource-group "$RESOURCE_GROUP_NAME" \
-            --account-name "$STORAGE_ACCOUNT_NAME" \
-            --ip-address "$PUBLIC_IP_ADDRESS"
+          # echo "Removing network access..."
+          # az storage account network-rule remove \
+          #   --resource-group "$RESOURCE_GROUP_NAME" \
+          #   --account-name "$STORAGE_ACCOUNT_NAME" \
+          #   --ip-address "$PUBLIC_IP_ADDRESS"

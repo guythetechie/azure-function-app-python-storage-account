@@ -33,6 +33,11 @@ resource storageBlobDataReaderRoleDefinition 'Microsoft.Authorization/roleDefini
   scope: subscription()
 }
 
+resource storageBlobDataContributorRoleDefinition 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
+  name: 'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
+  scope: subscription()
+}
+
 module resourceGroupDeployment 'br/public:avm/res/resources/resource-group:0.4.0' = {
   scope: subscription()
   name: 'resource-group-deployment'
@@ -182,7 +187,7 @@ module storageAccountDeployment 'br/public:avm/res/storage/storage-account:0.14.
     ]
     networkAcls: {
       bypass: 'AzureServices, Logging, Metrics'
-      defaultAction: 'Allow'
+      defaultAction: 'Deny'
       ipRules: empty(allowedIpAddresses)
         ? null
         : map(allowedIpAddresses, address => {
@@ -410,6 +415,10 @@ module functionAppStorageAccountRoleAssignments 'br/public:avm/ptn/authorization
     {
       resourceId: storageAccountContainer.id
       roleDefinitionId: storageBlobDataReaderRoleDefinition.id
+    }
+    {
+      resourceId: storageAccountContainer.id
+      roleDefinitionId: storageBlobDataContributorRoleDefinition.id
     }
     {
       resourceId: storageAccountQueue.id
