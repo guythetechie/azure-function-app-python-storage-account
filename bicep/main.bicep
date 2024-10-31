@@ -385,9 +385,6 @@ module eventGridSystemTopicDeployment 'br/public:avm/res/event-grid/system-topic
 
 module eventGridStorageAccountRoleAssignment 'br/public:avm/ptn/authorization/resource-role-assignment:0.1.1' = {
   scope: resourceGroup
-  dependsOn: [
-    storageAccountDeployment
-  ]
   name: 'event-grid-service-bus-role-assignment'
   params: {
     principalId: eventGridSystemTopicDeployment.outputs.systemAssignedMIPrincipalId
