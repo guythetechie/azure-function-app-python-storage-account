@@ -74,8 +74,7 @@ jobs:
             --scope "$STORAGE_ACCOUNT_CONTAINER_RESOURCE_ID"
 
           echo "Publishing function app..."
-          FUNCTION_APP_NAME=$(az stack sub show -n $DEPLOYMENT_STACK_NAME --query 'outputs.functionAppName.value' -o tsv)
-          RESOURCE_GROUP_NAME=$(az stack sub show -n $DEPLOYMENT_STACK_NAME --query 'outputs.functionAppResourceGroupName.value' -o tsv)
+          FUNCTION_APP_NAME=$(echo "$DEPLOYMENT_STACK" | jq -r '.outputs.functionAppName.value')
           az functionapp deployment source config-zip \
             --name "$FUNCTION_APP_NAME" \
             --resource-group "$RESOURCE_GROUP_NAME" \
