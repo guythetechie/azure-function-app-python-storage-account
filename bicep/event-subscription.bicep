@@ -24,6 +24,7 @@ resource eventSubscription 'Microsoft.EventGrid/systemTopics/eventSubscriptions@
   name: '${storageAccount.name}-${storageAccountQueue.name}'
   parent: eventGridTopic
   properties: {
+    eventDeliverySchema: 'CloudEventSchemaV1_0'
     deliveryWithResourceIdentity: {
       destination: {
         properties: {

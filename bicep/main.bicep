@@ -182,7 +182,7 @@ module storageAccountDeployment 'br/public:avm/res/storage/storage-account:0.14.
     ]
     networkAcls: {
       bypass: 'AzureServices, Logging, Metrics'
-      defaultAction: 'Deny'
+      defaultAction: 'Allow'
       ipRules: empty(allowedIpAddresses)
         ? null
         : map(allowedIpAddresses, address => {
