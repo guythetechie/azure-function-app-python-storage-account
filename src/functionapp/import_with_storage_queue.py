@@ -12,9 +12,6 @@ blueprint = func.Blueprint()
                          queue_name="%STORAGE_ACCOUNT_QUEUE_NAME%",
                          connection="STORAGE_ACCOUNT_CONNECTION")
 def main(message: func.QueueMessage) -> None:
-    logging.info('Python queue trigger function processed a queue item: %s',
-                 message.get_body().decode('utf-8'))
-
     body = json.loads(message.get_body())
     blobUrl = body["data"]["url"]
     logging.info(f"Blob URL: {blobUrl}")
