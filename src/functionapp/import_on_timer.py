@@ -10,7 +10,7 @@ blueprint = func.Blueprint()
 @blueprint.timer_trigger(schedule="0 0 0 * * *",
                          arg_name="timer",
                          run_on_startup=False)
-def main1(timer: func.TimerRequest) -> None:
+def main(timer: func.TimerRequest) -> None:
     logging.info("Creating blob service client...")
     storage_account_connection_string = os.getenv(
         "STORAGE_ACCOUNT_CONNECTION_STRING")
@@ -25,5 +25,6 @@ def main1(timer: func.TimerRequest) -> None:
     logging.info(f"Blob content: {blob_bytes}")
 
     for blobName in blob_container_client.list_blob_names():
-        logging.info(f"Blob name: {blobName}")
-        blob_container_client.download_blob(blobName).readall()
+        blobClient = blob_container_client.get_blob_client(blobName)
+        logging.info('Blob %s size is %d bytes', blobName,
+                     blobClient.get_blob_properties().size)
