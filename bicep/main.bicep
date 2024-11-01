@@ -167,7 +167,7 @@ module storageAccountDeployment 'br/public:avm/res/storage/storage-account:0.14.
         name: '${storageAccountName}-blob-pep'
         service: 'blob'
         subnetResourceId: privateEndpointSubnet.id
-        customNetworkInterfaceName: '${storageAccountName}-nic'
+        customNetworkInterfaceName: '${storageAccountName}-blob-nic'
         tags: tags
         privateLinkServiceConnectionName: '${storageAccountName}-blob'
         privateDnsZoneGroup: {
@@ -175,6 +175,22 @@ module storageAccountDeployment 'br/public:avm/res/storage/storage-account:0.14.
             {
               name: blobPrivateDnsZone.outputs.name
               privateDnsZoneResourceId: blobPrivateDnsZone.outputs.resourceId
+            }
+          ]
+        }
+      }
+      {
+        name: '${storageAccountName}-queue-pep'
+        service: 'queue'
+        subnetResourceId: privateEndpointSubnet.id
+        customNetworkInterfaceName: '${storageAccountName}-queue-nic'
+        tags: tags
+        privateLinkServiceConnectionName: '${storageAccountName}-queue'
+        privateDnsZoneGroup: {
+          privateDnsZoneGroupConfigs: [
+            {
+              name: queuePrivateDnsZone.outputs.name
+              privateDnsZoneResourceId: queuePrivateDnsZone.outputs.resourceId
             }
           ]
         }
