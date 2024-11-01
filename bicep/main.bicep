@@ -163,7 +163,7 @@ module storageAccountDeployment 'br/public:avm/res/storage/storage-account:0.14.
     tags: tags
     skuName: 'Standard_LRS'
     privateEndpoints: [
-      /*{
+      {
         name: '${storageAccountName}-blob-pep'
         service: 'blob'
         subnetResourceId: privateEndpointSubnet.id
@@ -178,7 +178,7 @@ module storageAccountDeployment 'br/public:avm/res/storage/storage-account:0.14.
             }
           ]
         }
-      }*/
+      }
       {
         name: '${storageAccountName}-queue-pep'
         service: 'queue'
