@@ -23,8 +23,8 @@ resource storageQueueDataMessageSenderRoleDefinition 'Microsoft.Authorization/ro
   scope: subscription()
 }
 
-resource storageQueueDataReaderRoleDefinition 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
-  name: '19e7f393-937e-4f77-808e-94535e297925'
+resource storageQueueDataContributorRoleDefinition 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
+  name: '974c5e8b-45b9-4653-ba55-5f855dd0fb88'
   scope: subscription()
 }
 
@@ -430,7 +430,7 @@ module functionAppStorageAccountRoleAssignments 'br/public:avm/ptn/authorization
     }
     {
       resourceId: storageAccount.id
-      roleDefinitionId: storageQueueDataReaderRoleDefinition.id
+      roleDefinitionId: storageQueueDataContributorRoleDefinition.id
     }
   ]: {
     scope: resourceGroup
