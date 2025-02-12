@@ -2,6 +2,8 @@ import logging
 import azure.functions as func
 import os
 import azure.storage.blob as blob
+import requests
+import socket
 
 blueprint = func.Blueprint()
 
@@ -11,6 +13,14 @@ blueprint = func.Blueprint()
                          arg_name="timer",
                          run_on_startup=False)
 def main(timer: func.TimerRequest) -> None:
+    # Log current public IP address
+    ip = requests.get("https://api.ipify.org").text
+    logging.info(f"Current public IP address: {ip}")
+
+    # Do DNS resolution for host name
+    ip_address=socket.gethostbyname("www.google.com")
+    logging.info(f"DNS resolution for www.google.com: {ip_address}")
+
     logging.info("Creating blob service client...")
     storage_account_connection_string = os.getenv(
         "STORAGE_ACCOUNT_CONNECTION_STRING")

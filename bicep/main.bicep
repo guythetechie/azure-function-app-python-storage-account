@@ -2,453 +2,265 @@ targetScope = 'subscription'
 
 param location string
 param tags object = {}
-param prefix string = 'pmobidl${take(uniqueString(subscription().id, '2'), 6)}'
-param resourceGroupName string = '${prefix}-rg'
-param logAnalyticsWorkspaceName string = '${prefix}-law'
-param applicationInsightsName string = '${prefix}-appinsights'
-param virtualNetworkName string = '${prefix}-vnet'
-param privateEndpointSubnetName string = 'private-endpoint-subnet'
-param vnetIntegrationSubnetName string = 'vnet-integration-subnet'
-param storageAccountName string = '${prefix}stor'
-param storageAccountContainerName string = 'blobs-container'
-param storageAccountQueueName string = 'blobs'
-param functionAppName string = '${prefix}-funcapp'
-param eventGridTopicName string = '${storageAccountName}-topic'
-param allowedIpAddressesSring string = ''
+param allowedIpAddressesCsv string = ''
 
-var allowedIpAddresses = map(split(allowedIpAddressesSring, ','), address => trim(address))
+var prefix = 'function-python-${take(uniqueString(subscription().id, '2'), 5)}'
+var alphanumericPrefix = replace(prefix, '-', '')
 
-resource storageQueueDataMessageSenderRoleDefinition 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
-  name: 'c6a89b2d-59bc-44d0-9896-0f6e12d7b80a'
-  scope: subscription()
+var allowedIpAddresses = empty(allowedIpAddressesCsv)
+  ? []
+  : map(split(allowedIpAddressesCsv, ','), address => trim(address))
+
+resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-07-01' = {
+  name: '${prefix}-rg'
+  location: location
+  tags: tags
 }
 
-resource storageQueueDataContributorRoleDefinition 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
-  name: '974c5e8b-45b9-4653-ba55-5f855dd0fb88'
-  scope: subscription()
-}
-
-resource storageBlobDataOwnerRoleDefinition 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
-  name: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
-  scope: subscription()
-}
-
-module resourceGroupDeployment 'br/public:avm/res/resources/resource-group:0.4.0' = {
-  scope: subscription()
-  name: 'resource-group-deployment'
+module logAnalyticsWorkspace '../common/bicep/log-analytics-workspace.bicep' = {
+  name: 'log-analytics-workspace'
+  scope: resourceGroup
   params: {
-    name: resourceGroupName
+    name: '${prefix}-log-analytics-workspace'
     location: location
     tags: tags
   }
 }
 
-resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-07-01' existing = {
-  name: resourceGroupName
-}
-
-module logAnalyticsWorkspaceDeployment 'br/public:avm/res/operational-insights/workspace:0.7.0' = {
+module applicationInsights '../common/bicep/application-insights.bicep' = {
+  name: 'application-insights'
   scope: resourceGroup
-  name: 'log-analytics-workspace-deployment'
-  dependsOn: [resourceGroupDeployment]
   params: {
-    name: logAnalyticsWorkspaceName
+    name: '${prefix}-application-insights'
     location: location
     tags: tags
-    skuName: 'PerGB2018'
-    dataRetention: 30
+    logAnalyticsWorkspaceId: logAnalyticsWorkspace.outputs.id
   }
 }
 
-module applicationInsightsDeployment 'br/public:avm/res/insights/component:0.3.0' = {
+module storageAccount '../common/bicep/storage-account.bicep' = {
+  name: 'storage-account'
   scope: resourceGroup
-  name: 'application-insights-deployment'
   params: {
-    name: applicationInsightsName
+    name: '${alphanumericPrefix}stor'
     location: location
     tags: tags
-    workspaceResourceId: logAnalyticsWorkspaceDeployment.outputs.resourceId
+    logAnalyticsWorkspaceId: logAnalyticsWorkspace.outputs.id
+    allowedIpAddresses: allowedIpAddresses
   }
 }
 
-resource applicationInsights 'Microsoft.Insights/components@2020-02-02' existing = {
-  name: applicationInsightsName
+module storageAccountFunctionAppContainer '../common/bicep/storage-account-container.bicep' = {
+  name: 'storage-account-function-app-container'
   scope: resourceGroup
+  params: {
+    name: 'function-app'
+    storageAccountName: storageAccount.outputs.name
+  }
 }
 
-module virtualNetworkDeployment 'br/public:avm/res/network/virtual-network:0.4.0' = {
+module storageAccountBlobDataOwnerFunctionAppRoleAssignment '../common/bicep/storage-account-role-assignment.bicep' = {
+  name: 'storage-account-blob-data-owner-function-app-role-assignment'
   scope: resourceGroup
-  dependsOn: [resourceGroupDeployment]
-  name: 'virtual-network-deployment'
   params: {
-    name: virtualNetworkName
+    principalId: functionApp.outputs.principalId
+    storageAccountName: storageAccount.outputs.name
+    roleName: 'Storage Blob Data Owner'
+    principalType: 'ServicePrincipal'
+  }
+}
+
+module storageAccountQueueDataMessageSenderSystemTopicRoleAssignment '../common/bicep/storage-account-role-assignment.bicep' = {
+  name: 'queue-data-message-sender-system-topic-role-assignment'
+  scope: resourceGroup
+  params: {
+    storageAccountName: storageAccount.outputs.name
+    roleName: 'Storage Queue Data Message Sender'
+    principalId: eventGridSystemTopic.outputs.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+module storageAccountUploadsContainer '../common/bicep/storage-account-container.bicep' = {
+  name: 'storage-account-uploads-container'
+  scope: resourceGroup
+  params: {
+    name: 'uploads'
+    storageAccountName: storageAccount.outputs.name
+  }
+}
+
+module storageAccountUploadsQueue '../common/bicep/storage-account-queue.bicep' = {
+  name: 'storage-account-blob-queue'
+  scope: resourceGroup
+  params: {
+    name: 'uploads'
+    storageAccountName: storageAccount.outputs.name
+  }
+}
+
+module storageAccountUploadsQueueDataReaderFunctionAppRoleAssignment '../common/bicep/storage-account-queue-role-assignment.bicep' = {
+  name: 'uploads-queue-data-reader-function-app-role-assignment'
+  scope: resourceGroup
+  params: {
+    queueName: storageAccountUploadsQueue.outputs.name
+    storageAccountName: storageAccount.outputs.name
+    roleName: 'Storage Queue Data Reader'
+    principalId: functionApp.outputs.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+module storageBlobPrivateDnsZone '../common/bicep/private-dns-zone.bicep' = {
+  name: 'storage-blob-private-dns-zone'
+  scope: resourceGroup
+  params: {
+    name: 'privatelink.blob.${environment().suffixes.storage}'
+    tags: tags
+    virtualNetworkId: virtualNetwork.outputs.id
+  }
+}
+
+module storageBlobPrivateEndpoint '../common/bicep/private-endpoint.bicep' = {
+  name: 'storage-blob-private-endpoint'
+  scope: resourceGroup
+  params: {
+    tags: tags
+    group: 'blob'
+    location: location
+    privateDnsZones: [
+      {
+        name: storageBlobPrivateDnsZone.outputs.name
+        id: storageBlobPrivateDnsZone.outputs.id
+      }
+    ]
+    resourceId: storageAccount.outputs.id
+    subnetId: privateEndpointSubnet.outputs.id
+  }
+}
+
+module storageQueuePrivateDnsZone '../common/bicep/private-dns-zone.bicep' = {
+  name: 'storage-queue-private-dns-zone'
+  scope: resourceGroup
+  params: {
+    name: 'privatelink.queue.${environment().suffixes.storage}'
+    tags: tags
+    virtualNetworkId: virtualNetwork.outputs.id
+  }
+}
+
+module storageQueuePrivateEndpoint '../common/bicep/private-endpoint.bicep' = {
+  name: 'storage-queue-private-endpoint'
+  scope: resourceGroup
+  params: {
+    tags: tags
+    group: 'queue'
+    location: location
+    privateDnsZones: [
+      {
+        name: storageQueuePrivateDnsZone.outputs.name
+        id: storageQueuePrivateDnsZone.outputs.id
+      }
+    ]
+    resourceId: storageAccount.outputs.id
+    subnetId: privateEndpointSubnet.outputs.id
+  }
+}
+
+module virtualNetwork '../common/bicep/virtual-network.bicep' = {
+  name: 'virtual-network'
+  scope: resourceGroup
+  params: {
+    name: '${prefix}-virtual-network'
     location: location
     tags: tags
     addressPrefixes: [
       '10.0.0.0/24'
     ]
-    subnets: [
-      {
-        name: privateEndpointSubnetName
-        addressPrefix: '10.0.0.0/26'
-      }
-      {
-        name: vnetIntegrationSubnetName
-        addressPrefix: '10.0.0.64/26'
-        delegation: 'Microsoft.App/environments'
-      }
-    ]
   }
 }
 
-module blobPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.6.0' = {
+module privateEndpointSubnet '../common/bicep/subnet.bicep' = {
+  name: 'private-endpoint-subnet'
   scope: resourceGroup
-  name: 'blob-private-dns-zone-deployment'
-  dependsOn: [resourceGroupDeployment]
   params: {
-    name: 'privatelink.blob.${environment().suffixes.storage}'
-    location: 'global'
-    tags: tags
-    virtualNetworkLinks: [
-      {
-        name: virtualNetworkDeployment.outputs.name
-        virtualNetworkResourceId: virtualNetworkDeployment.outputs.resourceId
-      }
-    ]
+    name: 'private-endpoint'
+    virtualNetworkName: virtualNetwork.outputs.name
+    addressPrefix: '10.0.0.0/28'
   }
 }
 
-module queuePrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.6.0' = {
+module vnetIntegrationSubnet '../common/bicep/subnet.bicep' = {
+  name: 'vnet-integration-subnet'
   scope: resourceGroup
-  name: 'queue-private-dns-zone-deployment'
-  dependsOn: [resourceGroupDeployment]
   params: {
-    name: 'privatelink.queue.${environment().suffixes.storage}'
-    location: 'global'
-    tags: tags
-    virtualNetworkLinks: [
-      {
-        name: virtualNetworkDeployment.outputs.name
-        virtualNetworkResourceId: virtualNetworkDeployment.outputs.resourceId
-      }
-    ]
+    name: 'vnet-integration'
+    virtualNetworkName: virtualNetwork.outputs.name
+    addressPrefix: '10.0.0.64/26'
+    delegation: 'Microsoft.App/environments'
   }
 }
 
-resource virtualNetwork 'Microsoft.Network/virtualNetworks@2024-01-01' existing = {
+module appServicePlan '../common/bicep/app-service-plan.bicep' = {
+  name: 'app-service-plan'
   scope: resourceGroup
-  name: virtualNetworkName
-}
-
-resource privateEndpointSubnet 'Microsoft.Network/virtualNetworks/subnets@2024-01-01' existing = {
-  parent: virtualNetwork
-  name: privateEndpointSubnetName
-}
-
-resource vnetIntegrationSubnet 'Microsoft.Network/virtualNetworks/subnets@2024-01-01' existing = {
-  parent: virtualNetwork
-  name: vnetIntegrationSubnetName
-}
-
-module storageAccountDeployment 'br/public:avm/res/storage/storage-account:0.14.1' = {
-  scope: resourceGroup
-  name: 'storage-account-deployment'
-  dependsOn: [
-    resourceGroupDeployment
-    virtualNetworkDeployment
-  ]
   params: {
-    name: storageAccountName
+    name: '${prefix}-app-service-plan'
     location: location
     tags: tags
-    skuName: 'Standard_LRS'
-    privateEndpoints: [
-      {
-        name: '${storageAccountName}-blob-pep'
-        service: 'blob'
-        subnetResourceId: privateEndpointSubnet.id
-        customNetworkInterfaceName: '${storageAccountName}-blob-nic'
-        tags: tags
-        privateLinkServiceConnectionName: '${storageAccountName}-blob'
-        privateDnsZoneGroup: {
-          privateDnsZoneGroupConfigs: [
-            {
-              name: blobPrivateDnsZone.outputs.name
-              privateDnsZoneResourceId: blobPrivateDnsZone.outputs.resourceId
-            }
-          ]
-        }
-      }
-      {
-        name: '${storageAccountName}-queue-pep'
-        service: 'queue'
-        subnetResourceId: privateEndpointSubnet.id
-        customNetworkInterfaceName: '${storageAccountName}-queue-nic'
-        tags: tags
-        privateLinkServiceConnectionName: '${storageAccountName}-queue'
-        privateDnsZoneGroup: {
-          privateDnsZoneGroupConfigs: [
-            {
-              name: queuePrivateDnsZone.outputs.name
-              privateDnsZoneResourceId: queuePrivateDnsZone.outputs.resourceId
-            }
-          ]
-        }
-      }
-    ]
-    networkAcls: {
-      bypass: 'AzureServices, Logging, Metrics'
-      defaultAction: 'Deny'
-      ipRules: empty(allowedIpAddresses)
-        ? null
-        : map(allowedIpAddresses, address => {
-            action: 'Allow'
-            value: address
-          })
-    }
-    blobServices: {
-      containers: [
-        {
-          name: storageAccountContainerName
-          publicAccess: 'None'
-        }
-      ]
-      diagnosticSettings: [
-        {
-          name: 'enable-all'
-          logAnalyticsDestinationType: 'Dedicated'
-          logCategoriesAndGroups: [
-            {
-              categoryGroup: 'AllLogs'
-            }
-          ]
-          workspaceResourceId: logAnalyticsWorkspaceDeployment.outputs.resourceId
-        }
-      ]
-    }
-    queueServices: {
-      queues: [
-        {
-          name: storageAccountQueueName
-        }
-      ]
-      diagnosticSettings: [
-        {
-          name: 'enable-all'
-          logAnalyticsDestinationType: 'Dedicated'
-          logCategoriesAndGroups: [
-            {
-              categoryGroup: 'AllLogs'
-            }
-          ]
-          workspaceResourceId: logAnalyticsWorkspaceDeployment.outputs.resourceId
-        }
-      ]
-    }
   }
 }
 
-resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
-  name: storageAccountName
+module functionApp '../common/bicep/function-app.bicep' = {
   scope: resourceGroup
-}
-
-resource storageAccountBlobService 'Microsoft.Storage/storageAccounts/blobServices@2023-05-01' existing = {
-  name: 'default'
-  parent: storageAccount
-}
-
-resource storageAccountContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-05-01' existing = {
-  name: storageAccountContainerName
-  parent: storageAccountBlobService
-}
-
-resource storageAccountQueueService 'Microsoft.Storage/storageAccounts/queueServices@2023-05-01' existing = {
-  name: 'default'
-  parent: storageAccount
-}
-
-resource storageAccountQueue 'Microsoft.Storage/storageAccounts/queueServices/queues@2023-05-01' existing = {
-  name: storageAccountQueueName
-  parent: storageAccountQueueService
-}
-
-module appServicePlanDeployment 'br/public:avm/res/web/serverfarm:0.2.4' = {
-  scope: resourceGroup
-  dependsOn: [resourceGroupDeployment]
-  name: 'app-service-plan-deployment'
+  name: 'function-app'
   params: {
-    name: '${functionAppName}-plan'
+    name: '${prefix}-function-app'
     location: location
     tags: tags
-    kind: 'FunctionApp'
-    skuName: 'FC1'
-    reserved: true
+    appServicePlanId: appServicePlan.outputs.id
+    applicationInsightsConnectionString: applicationInsights.outputs.connectionString
+    storageAccountId: storageAccount.outputs.id
+    storageAccountFunctionAppContainerName: storageAccountFunctionAppContainer.outputs.name
+    storageAccountUploadsContainerName: storageAccountUploadsContainer.outputs.name
+    storageAccountUploadsQueueName: storageAccountUploadsQueue.outputs.name
+    vnetIntegrationSubnetId: vnetIntegrationSubnet.outputs.id
   }
 }
 
-module functionAppDeployment 'br/public:avm/res/web/site:0.10.0' = {
+module eventGridSystemTopic '../common/bicep/event-grid-system-topic.bicep' = {
+  name: 'event-grid-system-topic'
   scope: resourceGroup
-  name: 'function-app-deployment'
-  dependsOn: [
-    resourceGroupDeployment
-    virtualNetworkDeployment
-    storageAccountDeployment
-    applicationInsightsDeployment
-  ]
   params: {
-    name: functionAppName
+    name: '${prefix}-${storageAccount.outputs.name}-event-grid-system-topic'
     location: location
     tags: tags
-    kind: 'functionapp,linux'
-    managedIdentities: {
-      systemAssigned: true
-    }
-    serverFarmResourceId: appServicePlanDeployment.outputs.resourceId
-    siteConfig: {
-      appSettings: [
-        {
-          name: 'AzureWebJobsStorage__blobServiceUri'
-          value: storageAccount.properties.primaryEndpoints.blob
-        }
-        {
-          name: 'AzureWebJobsStorage__queueServiceUri'
-          value: storageAccount.properties.primaryEndpoints.queue
-        }
-        {
-          name: 'AzureWebJobsStorage__tableServiceUri'
-          value: storageAccount.properties.primaryEndpoints.table
-        }
-        {
-          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-          value: applicationInsights.properties.ConnectionString
-        }
-        {
-          name: 'STORAGE_ACCOUNT_CONNECTION__blobServiceUri'
-          value: storageAccount.properties.primaryEndpoints.blob
-        }
-        {
-          name: 'STORAGE_ACCOUNT_CONNECTION__queueServiceUri'
-          value: storageAccount.properties.primaryEndpoints.queue
-        }
-        {
-          name: 'STORAGE_ACCOUNT_CONTAINER_NAME'
-          value: storageAccountContainerName
-        }
-        {
-          name: 'STORAGE_ACCOUNT_QUEUE_NAME'
-          value: storageAccountQueueName
-        }
-      ]
-      cors: {
-        allowedOrigins: [
-          'https://portal.azure.com'
-        ]
-      }
-    }
-    vnetRouteAllEnabled: false
-    vnetContentShareEnabled: true
-    vnetImagePullEnabled: true
-    virtualNetworkSubnetId: vnetIntegrationSubnet.id
-    functionAppConfig: {
-      deployment: {
-        storage: {
-          type: 'blobContainer'
-          value: uri(storageAccountDeployment.outputs.primaryBlobEndpoint, storageAccountContainerName)
-          authentication: {
-            type: 'SystemAssignedIdentity'
-          }
-        }
-      }
-      scaleAndConcurrency: {
-        maximumInstanceCount: 100
-        instanceMemoryMB: 2048
-      }
-      runtime: {
-        name: 'python'
-        version: '3.11'
-      }
-    }
-  }
-}
-
-module eventGridSystemTopicDeployment 'br/public:avm/res/event-grid/system-topic:0.4.0' = {
-  scope: resourceGroup
-  name: 'event-grid-system-topic-deployment'
-  params: {
-    name: eventGridTopicName
-    location: location
-    tags: tags
-    managedIdentities: {
-      systemAssigned: true
-    }
-    source: storageAccountDeployment.outputs.resourceId
+    logAnalyticsWorkspaceId: logAnalyticsWorkspace.outputs.id
+    sourceResourceId: storageAccount.outputs.id
     topicType: 'Microsoft.Storage.StorageAccounts'
-    diagnosticSettings: [
-      {
-        name: 'enable-all'
-        logAnalyticsDestinationType: 'Dedicated'
-        logCategoriesAndGroups: [
-          {
-            categoryGroup: 'AllLogs'
-          }
-        ]
-        workspaceResourceId: logAnalyticsWorkspaceDeployment.outputs.resourceId
-      }
-    ]
   }
 }
 
-module eventGridSubscriptionDeployment 'event-subscription.bicep' = {
-  name: 'event-grid-subscription-deployment'
+module eventGridSystemTopicSubscription '../common/bicep/event-grid-system-topic-storage-queue-subscription.bicep' = {
+  name: 'event-grid-system-topic-subscription'
   scope: resourceGroup
-  dependsOn: [eventGridStorageAccountRoleAssignment]
+  dependsOn: [
+    storageAccountQueueDataMessageSenderSystemTopicRoleAssignment
+  ]
   params: {
-    eventGridTopicName: eventGridSystemTopicDeployment.outputs.name
-    storageAccountName: storageAccountDeployment.outputs.name
-    storageAccountQueueName: storageAccountQueue.name
-    containerNameFilter: storageAccountContainerName
+    name: '${storageAccount.outputs.name}-${storageAccountUploadsQueue.outputs.name}'
+    topicName: eventGridSystemTopic.outputs.name
+    queueId: storageAccountUploadsQueue.outputs.id
+    filter: {
+      subjectBeginsWith: '/blobServices/default/containers/${storageAccountUploadsContainer.outputs.name}'
+      includedEventTypes: [
+        'Microsoft.Storage.BlobCreated'
+        'Microsoft.Storage.BlobDeleted'
+      ]
+    }
   }
 }
-
-module eventGridStorageAccountRoleAssignment 'br/public:avm/ptn/authorization/resource-role-assignment:0.1.1' = {
-  scope: resourceGroup
-  name: 'event-grid-storage-account-role-assignment'
-  params: {
-    principalId: eventGridSystemTopicDeployment.outputs.systemAssignedMIPrincipalId
-    resourceId: storageAccount.id
-    roleDefinitionId: storageQueueDataMessageSenderRoleDefinition.id
-    principalType: 'ServicePrincipal'
-  }
-}
-
-module functionAppStorageAccountRoleAssignments 'br/public:avm/ptn/authorization/resource-role-assignment:0.1.1' = [
-  for (item, index) in [
-    {
-      resourceId: storageAccount.id
-      roleDefinitionId: storageBlobDataOwnerRoleDefinition.id
-    }
-    {
-      resourceId: storageAccount.id
-      roleDefinitionId: storageQueueDataContributorRoleDefinition.id
-    }
-  ]: {
-    scope: resourceGroup
-    name: 'function-app-storage-account-role-assignment-${index}'
-    dependsOn: [
-      storageAccountDeployment
-    ]
-    params: {
-      principalId: functionAppDeployment.outputs.systemAssignedMIPrincipalId
-      resourceId: item.resourceId
-      roleDefinitionId: item.roleDefinitionId
-      principalType: 'ServicePrincipal'
-    }
-  }
-]
 
 output resourceGroupName string = resourceGroup.name
-output functionAppName string = functionAppDeployment.outputs.name
-output storageAccountName string = storageAccount.name
-output storageAccountContainerName string = storageAccountContainer.name
-output storageAccountContainerResourceId string = storageAccountContainer.id
+output functionAppName string = functionApp.outputs.name
+output storageAccountName string = storageAccount.outputs.name
