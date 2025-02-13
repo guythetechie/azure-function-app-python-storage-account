@@ -4,7 +4,6 @@ param tags object
 param appServicePlanId string
 param storageAccountId string
 param storageAccountFunctionAppContainerName string
-param storageAccountUploadsContainerName string
 param storageAccountUploadsQueueName string
 param applicationInsightsConnectionString string
 param vnetIntegrationSubnetId string
@@ -46,16 +45,8 @@ resource functionApp 'Microsoft.Web/sites@2024-04-01' = {
           value: applicationInsightsConnectionString
         }
         {
-          name: 'STORAGE_ACCOUNT_CONNECTION__blobServiceUri'
-          value: storageAccount.properties.primaryEndpoints.blob
-        }
-        {
           name: 'STORAGE_ACCOUNT_CONNECTION__queueServiceUri'
           value: storageAccount.properties.primaryEndpoints.queue
-        }
-        {
-          name: 'STORAGE_ACCOUNT_UPLOADS_CONTAINER_NAME'
-          value: storageAccountUploadsContainerName
         }
         {
           name: 'STORAGE_ACCOUNT_UPLOADS_QUEUE_NAME'
