@@ -42,12 +42,17 @@ module applicationInsights '../common/bicep/application-insights.bicep' = {
   }
 }
 
+resource uploadsStorageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
+  name: getResourceParentName(getResourceParentId(uploadsStorageAccountContainerId))
+  scope: uploadsStorageAccountResourceGroup
+}
+
 module uploadsStorageContainerBlobDataReaderRoleAssignment '../common/bicep/storage-account-container-role-assignment.bicep' = {
   name: 'uploads-storage-container-blob-data-reader-role-assignment'
   scope: uploadsStorageAccountResourceGroup
   params: {
     containerName: uploadsStorageAccountContainerName
-    storageAccountName: getResourceParentName(getResourceParentId(uploadsStorageAccountContainerId))
+    storageAccountName: uploadsStorageAccount.name
     roleName: 'Storage Blob Data Reader'
     principalId: functionApp.outputs.principalId
     principalType: 'ServicePrincipal'
@@ -184,10 +189,10 @@ module eventGridSystemTopic '../common/bicep/event-grid-system-topic.bicep' = {
   scope: uploadsStorageAccountResourceGroup
   params: {
     name: '${getAlphanumericPrefix(applicationName, resourceGroup.id)}-event-grid-system-topic'
-    location: location
+    location: uploadsStorageAccount.location
     tags: tags
     logAnalyticsWorkspaceId: logAnalyticsWorkspaceId
-    sourceResourceId: getResourceParentId(getResourceParentId(uploadsStorageAccountContainerId))
+    sourceResourceId: uploadsStorageAccount.id
     topicType: 'Microsoft.Storage.StorageAccounts'
   }
 }
