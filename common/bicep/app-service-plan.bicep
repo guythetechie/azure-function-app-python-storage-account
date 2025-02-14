@@ -8,8 +8,8 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2024-04-01' = {
   tags: tags
   sku: {
     name: 'FC1'
-    tier: 'FlexConsumption'
   }
+  kind: 'functionapp,linux'
   properties: {
     reserved: true
   }

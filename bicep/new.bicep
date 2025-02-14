@@ -47,7 +47,7 @@ module uploadsStorageContainerBlobDataReaderRoleAssignment '../common/bicep/stor
   scope: uploadsStorageAccountResourceGroup
   params: {
     containerName: uploadsStorageAccountContainerName
-    storageAccountName: getResourceParentName(uploadsStorageAccountContainerId)
+    storageAccountName: getResourceParentName(getResourceParentId(uploadsStorageAccountContainerId))
     roleName: 'Storage Blob Data Reader'
     principalId: functionApp.outputs.principalId
     principalType: 'ServicePrincipal'
@@ -181,7 +181,7 @@ module functionApp '../common/bicep/function-app.bicep' = {
 
 module eventGridSystemTopic '../common/bicep/event-grid-system-topic.bicep' = {
   name: 'event-grid-system-topic'
-  scope: resourceGroup
+  scope: uploadsStorageAccountResourceGroup
   params: {
     name: '${getAlphanumericPrefix(applicationName, resourceGroup.id)}-event-grid-system-topic'
     location: location
@@ -194,7 +194,7 @@ module eventGridSystemTopic '../common/bicep/event-grid-system-topic.bicep' = {
 
 module eventGridSystemTopicSubscription '../common/bicep/event-grid-system-topic-storage-queue-subscription.bicep' = {
   name: 'event-grid-system-topic-subscription'
-  scope: resourceGroup
+  scope: uploadsStorageAccountResourceGroup
   dependsOn: [
     storageAccountQueueDataMessageSenderSystemTopicRoleAssignment
   ]

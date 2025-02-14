@@ -9,7 +9,7 @@ blueprint = func.Blueprint()
 
 @blueprint.function_name(name="import_with_storage_queue")
 @blueprint.queue_trigger(arg_name="message",
-                         queue_name="%STORAGE_ACCOUNT_QUEUE_NAME%",
+                         queue_name="%STORAGE_ACCOUNT_UPLOADS_QUEUE_NAME%",
                          connection="STORAGE_ACCOUNT_CONNECTION")
 def main(message: func.QueueMessage) -> None:
     body = json.loads(message.get_body())

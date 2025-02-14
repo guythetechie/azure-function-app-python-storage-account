@@ -59,6 +59,9 @@ module privateEndpointSubnet '../common/bicep/subnet.bicep' = {
 module vnetIntegrationSubnet '../common/bicep/subnet.bicep' = {
   name: 'vnet-integration-subnet'
   scope: networkResourceGroup
+  dependsOn: [
+    privateEndpointSubnet
+  ]
   params: {
     name: 'vnet-integration'
     virtualNetworkName: virtualNetwork.outputs.name
@@ -71,7 +74,7 @@ module uploadsStorageAccount '../common/bicep/storage-account.bicep' = {
   name: 'uploads-storage-account'
   scope: uploadsStorageAccountResourceGroup
   params: {
-    name: getAlphanumericPrefix(applicationName, uploadsStorageAccountResourceGroup.id)
+    name: '${take(getAlphanumericPrefix(applicationName, uploadsStorageAccountResourceGroup.id), 19)}stor'
     location: location
     tags: tags
     logAnalyticsWorkspaceId: logAnalyticsWorkspace.outputs.id

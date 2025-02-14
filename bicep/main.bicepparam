@@ -1,4 +1,4 @@
 using 'main.bicep'
 
-param location = readEnvironmentVariable('AZURE_LOCATION', '')
-param allowedIpAddressesCsv = readEnvironmentVariable('ALLOWED_IP_ADDRESSES', '')
+param applicationName = 'pmi'
+param location = 'eastus2'
