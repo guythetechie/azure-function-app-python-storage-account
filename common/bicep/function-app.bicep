@@ -70,7 +70,7 @@ resource functionApp 'Microsoft.Web/sites@2024-04-01' = {
       }
       runtime: {
         name: 'powershell'
-        version: '7/4'
+        version: '7.4'
       }
     }
   }
