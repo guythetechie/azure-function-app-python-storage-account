@@ -50,7 +50,7 @@ module dnsResolverOutboundSubnet '../common/bicep/subnet.bicep' = {
     name: 'dns-resolver-outbound'
     virtualNetworkName: virtualNetwork.name
     addressPrefix: '172.28.169.32/28'
-    delegation: 'Microsoft.Network.dnsResolvers'
+    delegation: 'Microsoft.Network/dnsResolvers'
   }
 }
 
@@ -93,7 +93,7 @@ module storageAccount '../common/bicep/storage-account.bicep' = {
   name: 'storage-account'
   scope: resourceGroup
   params: {
-    name: '${take(getAlphanumericPrefix(applicationName, resourceGroup.id), 19)}stor'
+    name: toLower('${take(getAlphanumericPrefix(applicationName, resourceGroup.id), 19)}stor')
     location: location
     tags: tags
     logAnalyticsWorkspaceId: logAnalyticsWorkspaceId
