@@ -3,12 +3,8 @@ targetScope = 'subscription'
 param applicationName string
 param location string
 param tags object
-param uploadsStorageAccountContainerId string
 param logAnalyticsWorkspaceId string
-param privateEndpointSubnetId string
-param vnetIntegrationSubnetId string
-param storageBlobPrivateDnsZoneId string
-param storageQueuePrivateDnsZoneId string
+param virtualNetworkId string
 
 import {
   getPrefix
@@ -19,16 +15,72 @@ import {
   getResourceParentName
 } from '../common/bicep/functions.bicep'
 
-var uploadsStorageAccountContainerName = getResourceName(uploadsStorageAccountContainerId)
-
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-07-01' = {
   name: toLower('${applicationName}-rg')
   location: location
   tags: tags
 }
 
-resource uploadsStorageAccountResourceGroup 'Microsoft.Resources/resourceGroups@2024-07-01' existing = {
-  name: getResourceGroupName(uploadsStorageAccountContainerId)
+resource networkResourceGroup 'Microsoft.Resources/resourceGroups@2024-07-01' existing = {
+  name: getResourceGroupName(virtualNetworkId)
+}
+
+resource virtualNetwork 'Microsoft.Network/virtualNetworks@2024-05-01' existing = {
+  name: getResourceName(virtualNetworkId)
+  scope: networkResourceGroup
+}
+
+module privateEndpointSubnetDeployment '../common/bicep/subnet.bicep' = {
+  name: 'private-endpoint-subnet-deployment'
+  scope: networkResourceGroup
+  params: {
+    name: 'private-endpoint'
+    virtualNetworkName: virtualNetwork.name
+    addressPrefix: '172.28.169.0/28'
+  }
+}
+
+module dnsResolverOutboundSubnetDeployment '../common/bicep/subnet.bicep' = {
+  name: 'dns-resolver-outbound-subnet-deployment'
+  dependsOn: [
+    privateEndpointSubnetDeployment
+  ]
+  scope: networkResourceGroup
+  params: {
+    name: 'dns-resolver-outbound'
+    virtualNetworkName: virtualNetwork.name
+    addressPrefix: '172.28.169.32/28'
+    delegation: 'Microsoft.Network.dnsResolvers'
+  }
+}
+
+module vnetIntegrationSubnetDeployment '../common/bicep/subnet.bicep' = {
+  name: 'vnet-integration-subnet-deployment'
+  scope: networkResourceGroup
+  dependsOn: [
+    dnsResolverOutboundSubnetDeployment
+  ]
+  params: {
+    name: 'vnet-integration'
+    virtualNetworkName: virtualNetwork.name
+    addressPrefix: '172.28.169.64/27'
+    delegation: 'Microsoft.App/environments'
+  }
+}
+
+resource privateEndpointSubnet 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' existing = {
+  name: privateEndpointSubnetDeployment.outputs.name
+  parent: virtualNetwork
+}
+
+resource dnsResolverOutboundSubnet 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' existing = {
+  name: dnsResolverOutboundSubnetDeployment.outputs.name
+  parent: virtualNetwork
+}
+
+resource vnetIntegrationSubnet 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' existing = {
+  name: vnetIntegrationSubnetDeployment.outputs.name
+  parent: virtualNetwork
 }
 
 module applicationInsights '../common/bicep/application-insights.bicep' = {
@@ -42,20 +94,13 @@ module applicationInsights '../common/bicep/application-insights.bicep' = {
   }
 }
 
-resource uploadsStorageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
-  name: getResourceParentName(getResourceParentId(uploadsStorageAccountContainerId))
-  scope: uploadsStorageAccountResourceGroup
-}
-
-module uploadsStorageContainerBlobDataReaderRoleAssignment '../common/bicep/storage-account-container-role-assignment.bicep' = {
-  name: 'uploads-storage-container-blob-data-reader-role-assignment'
-  scope: uploadsStorageAccountResourceGroup
+module storageBlobPrivateDnsZone '../common/bicep/private-dns-zone.bicep' = {
+  name: 'storage-blob-private-dns-zone'
+  scope: networkResourceGroup
   params: {
-    containerName: uploadsStorageAccountContainerName
-    storageAccountName: uploadsStorageAccount.name
-    roleName: 'Storage Blob Data Reader'
-    principalId: functionApp.outputs.principalId
-    principalType: 'ServicePrincipal'
+    name: 'privatelink.blob.${environment().suffixes.storage}'
+    tags: tags
+    virtualNetworkId: virtualNetwork.id
   }
 }
 
@@ -99,62 +144,12 @@ module storageBlobPrivateEndpoint '../common/bicep/private-endpoint.bicep' = {
     location: location
     privateDnsZones: [
       {
-        name: getResourceName(storageBlobPrivateDnsZoneId)
-        id: storageBlobPrivateDnsZoneId
+        name: storageBlobPrivateDnsZone.outputs.name
+        id: storageBlobPrivateDnsZone.outputs.id
       }
     ]
     resourceId: storageAccount.outputs.id
-    subnetId: privateEndpointSubnetId
-  }
-}
-
-module storageAccountUploadsQueue '../common/bicep/storage-account-queue.bicep' = {
-  name: 'storage-account-blob-queue'
-  scope: resourceGroup
-  params: {
-    name: 'uploads'
-    storageAccountName: storageAccount.outputs.name
-  }
-}
-
-module storageQueuePrivateEndpoint '../common/bicep/private-endpoint.bicep' = {
-  name: 'storage-queue-private-endpoint'
-  scope: resourceGroup
-  params: {
-    tags: tags
-    group: 'queue'
-    location: location
-    privateDnsZones: [
-      {
-        name: getResourceName(storageQueuePrivateDnsZoneId)
-        id: storageQueuePrivateDnsZoneId
-      }
-    ]
-    resourceId: storageAccount.outputs.id
-    subnetId: privateEndpointSubnetId
-  }
-}
-
-module storageAccountUploadsQueueDataReaderFunctionAppRoleAssignment '../common/bicep/storage-account-queue-role-assignment.bicep' = {
-  name: 'uploads-queue-data-reader-function-app-role-assignment'
-  scope: resourceGroup
-  params: {
-    queueName: storageAccountUploadsQueue.outputs.name
-    storageAccountName: storageAccount.outputs.name
-    roleName: 'Storage Queue Data Reader'
-    principalId: functionApp.outputs.principalId
-    principalType: 'ServicePrincipal'
-  }
-}
-
-module storageAccountQueueDataMessageSenderSystemTopicRoleAssignment '../common/bicep/storage-account-role-assignment.bicep' = {
-  name: 'queue-data-message-sender-system-topic-role-assignment'
-  scope: resourceGroup
-  params: {
-    storageAccountName: storageAccount.outputs.name
-    roleName: 'Storage Queue Data Message Sender'
-    principalId: eventGridSystemTopic.outputs.principalId
-    principalType: 'ServicePrincipal'
+    subnetId: privateEndpointSubnet.id
   }
 }
 
@@ -179,40 +174,6 @@ module functionApp '../common/bicep/function-app.bicep' = {
     applicationInsightsConnectionString: applicationInsights.outputs.connectionString
     storageAccountId: storageAccount.outputs.id
     storageAccountFunctionAppContainerName: storageAccountFunctionAppContainer.outputs.name
-    storageAccountUploadsQueueName: storageAccountUploadsQueue.outputs.name
-    vnetIntegrationSubnetId: vnetIntegrationSubnetId
-  }
-}
-
-module eventGridSystemTopic '../common/bicep/event-grid-system-topic.bicep' = {
-  name: 'event-grid-system-topic'
-  scope: uploadsStorageAccountResourceGroup
-  params: {
-    name: '${getAlphanumericPrefix(applicationName, resourceGroup.id)}-event-grid-system-topic'
-    location: uploadsStorageAccount.location
-    tags: tags
-    logAnalyticsWorkspaceId: logAnalyticsWorkspaceId
-    sourceResourceId: uploadsStorageAccount.id
-    topicType: 'Microsoft.Storage.StorageAccounts'
-  }
-}
-
-module eventGridSystemTopicSubscription '../common/bicep/event-grid-system-topic-storage-queue-subscription.bicep' = {
-  name: 'event-grid-system-topic-subscription'
-  scope: uploadsStorageAccountResourceGroup
-  dependsOn: [
-    storageAccountQueueDataMessageSenderSystemTopicRoleAssignment
-  ]
-  params: {
-    name: '${storageAccount.outputs.name}-${storageAccountUploadsQueue.outputs.name}'
-    topicName: eventGridSystemTopic.outputs.name
-    queueId: storageAccountUploadsQueue.outputs.id
-    filter: {
-      subjectBeginsWith: '/blobServices/default/containers/${uploadsStorageAccountContainerName}'
-      includedEventTypes: [
-        'Microsoft.Storage.BlobCreated'
-        'Microsoft.Storage.BlobDeleted'
-      ]
-    }
+    vnetIntegrationSubnetId: vnetIntegrationSubnet.id
   }
 }
