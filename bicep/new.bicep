@@ -30,8 +30,8 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2024-05-01' existing 
   scope: networkResourceGroup
 }
 
-module privateEndpointSubnetDeployment '../common/bicep/subnet.bicep' = {
-  name: 'private-endpoint-subnet-deployment'
+module privateEndpointSubnet '../common/bicep/subnet.bicep' = {
+  name: 'private-endpoint-subnet'
   scope: networkResourceGroup
   params: {
     name: 'private-endpoint'
@@ -40,10 +40,10 @@ module privateEndpointSubnetDeployment '../common/bicep/subnet.bicep' = {
   }
 }
 
-module dnsResolverOutboundSubnetDeployment '../common/bicep/subnet.bicep' = {
-  name: 'dns-resolver-outbound-subnet-deployment'
+module dnsResolverOutboundSubnet '../common/bicep/subnet.bicep' = {
+  name: 'dns-resolver-outbound-subnet'
   dependsOn: [
-    privateEndpointSubnetDeployment
+    privateEndpointSubnet
   ]
   scope: networkResourceGroup
   params: {
@@ -54,11 +54,11 @@ module dnsResolverOutboundSubnetDeployment '../common/bicep/subnet.bicep' = {
   }
 }
 
-module vnetIntegrationSubnetDeployment '../common/bicep/subnet.bicep' = {
-  name: 'vnet-integration-subnet-deployment'
+module vnetIntegrationSubnet '../common/bicep/subnet.bicep' = {
+  name: 'vnet-integration-subnet'
   scope: networkResourceGroup
   dependsOn: [
-    dnsResolverOutboundSubnetDeployment
+    dnsResolverOutboundSubnet
   ]
   params: {
     name: 'vnet-integration'
@@ -66,21 +66,6 @@ module vnetIntegrationSubnetDeployment '../common/bicep/subnet.bicep' = {
     addressPrefix: '172.28.169.64/27'
     delegation: 'Microsoft.App/environments'
   }
-}
-
-resource privateEndpointSubnet 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' existing = {
-  name: privateEndpointSubnetDeployment.outputs.name
-  parent: virtualNetwork
-}
-
-resource dnsResolverOutboundSubnet 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' existing = {
-  name: dnsResolverOutboundSubnetDeployment.outputs.name
-  parent: virtualNetwork
-}
-
-resource vnetIntegrationSubnet 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' existing = {
-  name: vnetIntegrationSubnetDeployment.outputs.name
-  parent: virtualNetwork
 }
 
 module applicationInsights '../common/bicep/application-insights.bicep' = {
@@ -149,7 +134,7 @@ module storageBlobPrivateEndpoint '../common/bicep/private-endpoint.bicep' = {
       }
     ]
     resourceId: storageAccount.outputs.id
-    subnetId: privateEndpointSubnet.id
+    subnetId: privateEndpointSubnet.outputs.id
   }
 }
 
@@ -174,6 +159,6 @@ module functionApp '../common/bicep/function-app.bicep' = {
     applicationInsightsConnectionString: applicationInsights.outputs.connectionString
     storageAccountId: storageAccount.outputs.id
     storageAccountFunctionAppContainerName: storageAccountFunctionAppContainer.outputs.name
-    vnetIntegrationSubnetId: vnetIntegrationSubnet.id
+    vnetIntegrationSubnetId: vnetIntegrationSubnet.outputs.id
   }
 }
