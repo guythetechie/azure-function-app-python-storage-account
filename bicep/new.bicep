@@ -226,6 +226,24 @@ resource uploadsStorageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' ex
   scope: uploadsStorageAccountResourceGroup
 }
 
+module uploadsStorageBlobPrivateEndpoint '../common/bicep/private-endpoint.bicep' = {
+  name: 'uploads-storage-blob-private-endpoint'
+  scope: resourceGroup
+  params: {
+    tags: tags
+    group: 'blob'
+    location: location
+    privateDnsZones: [
+      {
+        name: storageBlobPrivateDnsZone.outputs.name
+        id: storageBlobPrivateDnsZone.outputs.id
+      }
+    ]
+    resourceId: uploadsStorageAccount.id
+    subnetId: privateEndpointSubnet.outputs.id
+  }
+}
+
 module uploadsStorageContainerBlobDataReaderRoleAssignment '../common/bicep/storage-account-container-role-assignment.bicep' = {
   name: 'uploads-storage-container-blob-data-reader-role-assignment'
   scope: uploadsStorageAccountResourceGroup

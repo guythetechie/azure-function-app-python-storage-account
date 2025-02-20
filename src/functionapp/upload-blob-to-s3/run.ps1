@@ -1,19 +1,25 @@
 param($QueueItem)
 
-$QueueItem | ForEach-Object -Parallel {
+Set-StrictMode -Version Latest
+$ErrorActionPreference = "Stop"
+
+$QueueItem | ForEach-Object {
     $item = $_
+    Write-Information "Processing item: $($item.data.url)"
 
     Write-Information "Creating download folder..."
     $folderPath = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
-    New-Item -ItemType Directory -Path $folderPath -Force
+    New-Item -ItemType Directory -Path $folderPath -Force | Out-Null
 
     Write-Information "Downloading blob from Azure Blob Storage..."
-    $blobUrl = $item.data.url
-    $fileName = $blobUrl.Split("/")[-1]
+    $blobUri = [System.Uri]::new($item.data.url)
+    $fileName = $blobUri.AbsolutePath.Split('/')[-1]
     $filePath = Join-Path $folderPath $fileName
     $parameters = @{
-        AbsoluteUri = $blobUrl
+        Blob = $fileName
+        Container = $blobUri.AbsolutePath.Split('/')[-2]
         Destination = $filePath
+        Context = New-AzStorageContext -BlobEndpoint $blobUri.AbsoluteUri -UseConnectedAccount
     }
     Get-AzStorageBlobContent @parameters
     
