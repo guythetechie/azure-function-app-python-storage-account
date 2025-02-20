@@ -1,0 +1,11 @@
+{
+  "bindings": [
+    {
+      "name": "QueueItem",
+      "type": "queueTrigger",
+      "direction": "in",
+      "queueName": "%STORAGE_ACCOUNT_UPLOADS_QUEUE_NAME%",
+      "connection": "STORAGE_ACCOUNT_CONNECTION"
+    }
+  ]
+}

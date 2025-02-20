@@ -20,10 +20,7 @@ module new 'new.bicep' = {
     tags: tags
     applicationName: applicationName
     logAnalyticsWorkspaceId: existing.outputs.logAnalyticsWorkspaceId
-    privateEndpointSubnetId: existing.outputs.privateEndpointSubnetId
-    storageBlobPrivateDnsZoneId: existing.outputs.storageBlobPrivateDnsZoneId
-    storageQueuePrivateDnsZoneId: existing.outputs.storageQueuePrivateDnsZoneId
     uploadsStorageAccountContainerId: existing.outputs.uploadsStorageAccountContainerId
-    vnetIntegrationSubnetId: existing.outputs.vnetIntegrationSubnetId
+    virtualNetworkId: existing.outputs.virtualNetworkId
   }
 }

@@ -4,6 +4,7 @@ param tags object
 param appServicePlanId string
 param storageAccountId string
 param storageAccountFunctionAppContainerName string
+param storageAccountUploadsQueueName string
 param applicationInsightsConnectionString string
 param vnetIntegrationSubnetId string
 
@@ -43,6 +44,14 @@ resource functionApp 'Microsoft.Web/sites@2024-04-01' = {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
           value: applicationInsightsConnectionString
         }
+        {
+          name: 'STORAGE_ACCOUNT_CONNECTION__queueServiceUri'
+          value: storageAccount.properties.primaryEndpoints.queue
+        }
+        {
+          name: 'STORAGE_ACCOUNT_UPLOADS_QUEUE_NAME'
+          value: storageAccountUploadsQueueName
+        }
       ]
       cors: {
         allowedOrigins: [
@@ -50,6 +59,7 @@ resource functionApp 'Microsoft.Web/sites@2024-04-01' = {
         ]
       }
     }
+    publicNetworkAccess: 'Enabled'
     vnetRouteAllEnabled: false
     vnetContentShareEnabled: true
     vnetImagePullEnabled: true

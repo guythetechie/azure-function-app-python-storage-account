@@ -18,6 +18,12 @@ resource networkResourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = 
   tags: tags
 }
 
+resource uploadsResourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
+  name: toLower('${applicationName}-uploads-rg')
+  location: location
+  tags: tags
+}
+
 module logAnalyticsWorkspace '../common/bicep/log-analytics-workspace.bicep' = {
   name: 'log-analytics-workspace'
   scope: monitoringResourceGroup
@@ -64,63 +70,26 @@ module virtualNetwork '../common/bicep/virtual-network.bicep' = {
 //   }
 // }
 
-// module uploadsStorageAccount '../common/bicep/storage-account.bicep' = {
-//   name: 'uploads-storage-account'
-//   scope: uploadsStorageAccountResourceGroup
-//   params: {
-//     name: '${take(getAlphanumericPrefix(applicationName, uploadsStorageAccountResourceGroup.id), 19)}stor'
-//     location: location
-//     tags: tags
-//     logAnalyticsWorkspaceId: logAnalyticsWorkspace.outputs.id
-//   }
-// }
+module uploadsStorageAccount '../common/bicep/storage-account.bicep' = {
+  name: 'uploads-storage-account'
+  scope: uploadsResourceGroup
+  params: {
+    name: '${take(getAlphanumericPrefix(applicationName, uploadsResourceGroup.id), 19)}uploadstor'
+    location: location
+    tags: tags
+    logAnalyticsWorkspaceId: logAnalyticsWorkspace.outputs.id
+  }
+}
 
-// module uploadsContainer '../common/bicep/storage-account-container.bicep' = {
-//   name: 'uploads-container'
-//   scope: uploadsStorageAccountResourceGroup
-//   params: {
-//     name: 'uploads'
-//     storageAccountName: uploadsStorageAccount.outputs.name
-//   }
-// }
-
-// module storageBlobPrivateDnsZone '../common/bicep/private-dns-zone.bicep' = {
-//   name: 'storage-blob-private-dns-zone'
-//   scope: networkResourceGroup
-//   params: {
-//     name: 'privatelink.blob.${environment().suffixes.storage}'
-//     tags: tags
-//     virtualNetworkId: virtualNetwork.outputs.id
-//   }
-// }
-
-// module uploadsStorageBlobPrivateEndpoint '../common/bicep/private-endpoint.bicep' = {
-//   name: 'uploads-storage-blob-private-endpoint'
-//   scope: uploadsStorageAccountResourceGroup
-//   params: {
-//     tags: tags
-//     group: 'blob'
-//     location: location
-//     privateDnsZones: [
-//       {
-//         name: storageBlobPrivateDnsZone.outputs.name
-//         id: storageBlobPrivateDnsZone.outputs.id
-//       }
-//     ]
-//     resourceId: uploadsStorageAccount.outputs.id
-//     subnetId: privateEndpointSubnet.outputs.id
-//   }
-// }
-
-// module storageQueuePrivateDnsZone '../common/bicep/private-dns-zone.bicep' = {
-//   name: 'storage-queue-private-dns-zone'
-//   scope: networkResourceGroup
-//   params: {
-//     name: 'privatelink.queue.${environment().suffixes.storage}'
-//     tags: tags
-//     virtualNetworkId: virtualNetwork.outputs.id
-//   }
-// }
+module uploadsContainer '../common/bicep/storage-account-container.bicep' = {
+  name: 'uploads-container'
+  scope: uploadsResourceGroup
+  params: {
+    name: 'uploads'
+    storageAccountName: uploadsStorageAccount.outputs.name
+  }
+}
 
 output logAnalyticsWorkspaceId string = logAnalyticsWorkspace.outputs.id
 output virtualNetworkId string = virtualNetwork.outputs.id
+output uploadsStorageAccountContainerId string = uploadsContainer.outputs.id

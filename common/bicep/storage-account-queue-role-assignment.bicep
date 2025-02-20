@@ -2,7 +2,7 @@ param name string?
 param queueName string
 param storageAccountName string
 @allowed([
-  'Storage Queue Data Reader'
+  'Storage Queue Data Contributor'
   'Storage Queue Data Message Sender'
 ])
 param roleName string
@@ -12,7 +12,7 @@ param principalType null | 'ServicePrincipal' | 'User' | 'Group' | 'ForeignGroup
 var roleDefinitionId = subscriptionResourceId(
   'Microsoft.Authorization/roleDefinitions',
   {
-    'Storage Queue Data Reader': '19e7f393-937e-4f77-808e-94535e297925'
+    'Storage Queue Data Contributor': '974c5e8b-45b9-4653-ba55-5f855dd0fb88'
     'Storage Queue Data Message Sender': 'c6a89b2d-59bc-44d0-9896-0f6e12d7b80a'
   }[roleName]
 )

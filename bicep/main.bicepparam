@@ -1,4 +1,4 @@
 using 'main.bicep'
 
-param applicationName = 'pmi'
+param applicationName = 'pwsh'
 param location = 'eastus2'

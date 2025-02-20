@@ -1,6 +1,6 @@
 @export()
 func getPrefix(applicationName string, resourceGroupId string) string =>
-  '${applicationName}-${take(uniqueString(resourceGroupId), 4)}'
+  toLower('${applicationName}-${take(uniqueString(resourceGroupId), 4)}')
 @export()
 func getAlphanumericPrefix(applicationName string, resourceGroupId string) string =>
   replace(getPrefix(applicationName, resourceGroupId), '-', '')

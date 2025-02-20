@@ -1,0 +1,328 @@
+<Objs Version="1.1.0.1" xmlns="http://schemas.microsoft.com/powershell/2004/04">
+  <Obj RefId="0">
+    <TN RefId="0">
+      <T>Microsoft.PowerShell.Commands.PSRepositoryItemInfo</T>
+      <T>System.Management.Automation.PSCustomObject</T>
+      <T>System.Object</T>
+    </TN>
+    <MS>
+      <S N="Name">AWS.Tools.S3</S>
+      <S N="Version">4.1.761</S>
+      <S N="Type">Module</S>
+      <S N="Description">The S3 module of AWS Tools for PowerShell lets developers and administrators manage Amazon Simple Storage Service (S3) from the PowerShell scripting environment. In order to manage each AWS service, install the corresponding module (e.g. AWS.Tools.EC2, AWS.Tools.S3...)._x000D__x000A_The module AWS.Tools.Installer (https://www.powershellgallery.com/packages/AWS.Tools.Installer/) makes it easier to install, update and uninstall the AWS.Tools modules._x000D__x000A_This version of AWS Tools for PowerShell is compatible with Windows PowerShell 5.1+ and PowerShell Core 6+ on Windows, Linux and macOS. When running on Windows PowerShell, .NET Framework 4.7.2 or newer is required. Alternative modules AWSPowerShell.NetCore and AWSPowerShell, provide support for all AWS services from a single module and also support older versions of Windows PowerShell and .NET Framework.</S>
+      <S N="Author">Amazon.com Inc</S>
+      <S N="CompanyName">aws-dotnet-sdk-team</S>
+      <S N="Copyright">Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.</S>
+      <DT N="PublishedDate">2025-02-19T23:02:44+00:00</DT>
+      <Nil N="InstalledDate" />
+      <Nil N="UpdatedDate" />
+      <URI N="LicenseUri">https://aws.amazon.com/apache-2-0/</URI>
+      <URI N="ProjectUri">https://github.com/aws/aws-tools-for-powershell</URI>
+      <URI N="IconUri">https://sdk-for-net.amazonwebservices.com/images/AWSLogo128x128.png</URI>
+      <Obj N="Tags" RefId="1">
+        <TN RefId="1">
+          <T>System.Object[]</T>
+          <T>System.Array</T>
+          <T>System.Object</T>
+        </TN>
+        <LST>
+          <S>AWS</S>
+          <S>cloud</S>
+          <S>Windows</S>
+          <S>PSEdition_Desktop</S>
+          <S>PSEdition_Core</S>
+          <S>Linux</S>
+          <S>MacOS</S>
+          <S>Mac</S>
+          <S>PSModule</S>
+        </LST>
+      </Obj>
+      <Obj N="Includes" RefId="2">
+        <TN RefId="2">
+          <T>System.Collections.Hashtable</T>
+          <T>System.Object</T>
+        </TN>
+        <DCT>
+          <En>
+            <S N="Key">Workflow</S>
+            <Obj N="Value" RefId="3">
+              <TNRef RefId="1" />
+              <LST />
+            </Obj>
+          </En>
+          <En>
+            <S N="Key">Cmdlet</S>
+            <Obj N="Value" RefId="4">
+              <TNRef RefId="1" />
+              <LST>
+                <S>Add-S3PublicAccessBlock</S>
+                <S>Copy-S3Object</S>
+                <S>Get-S3ACL</S>
+                <S>Get-S3Bucket</S>
+                <S>Get-S3BucketAccelerateConfiguration</S>
+                <S>Get-S3BucketAnalyticsConfiguration</S>
+                <S>Get-S3BucketAnalyticsConfigurationList</S>
+                <S>Get-S3BucketEncryption</S>
+                <S>Get-S3BucketIntelligentTieringConfiguration</S>
+                <S>Get-S3BucketIntelligentTieringConfigurationList</S>
+                <S>Get-S3BucketInventoryConfiguration</S>
+                <S>Get-S3BucketInventoryConfigurationList</S>
+                <S>Get-S3BucketLocation</S>
+                <S>Get-S3BucketLogging</S>
+                <S>Get-S3BucketMetadataTableConfiguration</S>
+                <S>Get-S3BucketMetricsConfiguration</S>
+                <S>Get-S3BucketMetricsConfigurationList</S>
+                <S>Get-S3BucketNotification</S>
+                <S>Get-S3BucketOwnershipControl</S>
+                <S>Get-S3BucketPolicy</S>
+                <S>Get-S3BucketPolicyStatus</S>
+                <S>Get-S3BucketReplication</S>
+                <S>Get-S3BucketRequestPayment</S>
+                <S>Get-S3BucketTagging</S>
+                <S>Get-S3BucketVersioning</S>
+                <S>Get-S3BucketWebsite</S>
+                <S>Get-S3CORSConfiguration</S>
+                <S>Get-S3DirectoryBucket</S>
+                <S>Get-S3LifecycleConfiguration</S>
+                <S>Get-S3MultipartUpload</S>
+                <S>Get-S3Object</S>
+                <S>Get-S3ObjectAttribute</S>
+                <S>Get-S3ObjectLegalHold</S>
+                <S>Get-S3ObjectLockConfiguration</S>
+                <S>Get-S3ObjectMetadata</S>
+                <S>Get-S3ObjectRetention</S>
+                <S>Get-S3ObjectTagSet</S>
+                <S>Get-S3ObjectV2</S>
+                <S>Get-S3PreSignedURL</S>
+                <S>Get-S3PublicAccessBlock</S>
+                <S>Get-S3Version</S>
+                <S>New-S3Bucket</S>
+                <S>New-S3BucketMetadataTableConfiguration</S>
+                <S>New-S3Session</S>
+                <S>Read-S3Object</S>
+                <S>Remove-S3Bucket</S>
+                <S>Remove-S3BucketAnalyticsConfiguration</S>
+                <S>Remove-S3BucketEncryption</S>
+                <S>Remove-S3BucketIntelligentTieringConfiguration</S>
+                <S>Remove-S3BucketInventoryConfiguration</S>
+                <S>Remove-S3BucketMetadataTableConfiguration</S>
+                <S>Remove-S3BucketMetricsConfiguration</S>
+                <S>Remove-S3BucketOwnershipControl</S>
+                <S>Remove-S3BucketPolicy</S>
+                <S>Remove-S3BucketReplication</S>
+                <S>Remove-S3BucketTagging</S>
+                <S>Remove-S3BucketWebsite</S>
+                <S>Remove-S3CORSConfiguration</S>
+                <S>Remove-S3LifecycleConfiguration</S>
+                <S>Remove-S3MultipartUpload</S>
+                <S>Remove-S3Object</S>
+                <S>Remove-S3ObjectTagSet</S>
+                <S>Remove-S3PublicAccessBlock</S>
+                <S>Restore-S3Object</S>
+                <S>Select-S3ObjectContent</S>
+                <S>Set-S3ACL</S>
+                <S>Set-S3BucketEncryption</S>
+                <S>Test-S3Bucket</S>
+                <S>Write-S3BucketAccelerateConfiguration</S>
+                <S>Write-S3BucketAnalyticsConfiguration</S>
+                <S>Write-S3BucketIntelligentTieringConfiguration</S>
+                <S>Write-S3BucketInventoryConfiguration</S>
+                <S>Write-S3BucketLogging</S>
+                <S>Write-S3BucketMetricsConfiguration</S>
+                <S>Write-S3BucketNotification</S>
+                <S>Write-S3BucketOwnershipControl</S>
+                <S>Write-S3BucketPolicy</S>
+                <S>Write-S3BucketReplication</S>
+                <S>Write-S3BucketRequestPayment</S>
+                <S>Write-S3BucketTagging</S>
+                <S>Write-S3BucketVersioning</S>
+                <S>Write-S3BucketWebsite</S>
+                <S>Write-S3CORSConfiguration</S>
+                <S>Write-S3GetObjectResponse</S>
+                <S>Write-S3LifecycleConfiguration</S>
+                <S>Write-S3Object</S>
+                <S>Write-S3ObjectLegalHold</S>
+                <S>Write-S3ObjectLockConfiguration</S>
+                <S>Write-S3ObjectRetention</S>
+                <S>Write-S3ObjectTagSet</S>
+              </LST>
+            </Obj>
+          </En>
+          <En>
+            <S N="Key">Command</S>
+            <Obj N="Value" RefId="5">
+              <TNRef RefId="1" />
+              <LST>
+                <S>Add-S3PublicAccessBlock</S>
+                <S>Copy-S3Object</S>
+                <S>Get-S3ACL</S>
+                <S>Get-S3Bucket</S>
+                <S>Get-S3BucketAccelerateConfiguration</S>
+                <S>Get-S3BucketAnalyticsConfiguration</S>
+                <S>Get-S3BucketAnalyticsConfigurationList</S>
+                <S>Get-S3BucketEncryption</S>
+                <S>Get-S3BucketIntelligentTieringConfiguration</S>
+                <S>Get-S3BucketIntelligentTieringConfigurationList</S>
+                <S>Get-S3BucketInventoryConfiguration</S>
+                <S>Get-S3BucketInventoryConfigurationList</S>
+                <S>Get-S3BucketLocation</S>
+                <S>Get-S3BucketLogging</S>
+                <S>Get-S3BucketMetadataTableConfiguration</S>
+                <S>Get-S3BucketMetricsConfiguration</S>
+                <S>Get-S3BucketMetricsConfigurationList</S>
+                <S>Get-S3BucketNotification</S>
+                <S>Get-S3BucketOwnershipControl</S>
+                <S>Get-S3BucketPolicy</S>
+                <S>Get-S3BucketPolicyStatus</S>
+                <S>Get-S3BucketReplication</S>
+                <S>Get-S3BucketRequestPayment</S>
+                <S>Get-S3BucketTagging</S>
+                <S>Get-S3BucketVersioning</S>
+                <S>Get-S3BucketWebsite</S>
+                <S>Get-S3CORSConfiguration</S>
+                <S>Get-S3DirectoryBucket</S>
+                <S>Get-S3LifecycleConfiguration</S>
+                <S>Get-S3MultipartUpload</S>
+                <S>Get-S3Object</S>
+                <S>Get-S3ObjectAttribute</S>
+                <S>Get-S3ObjectLegalHold</S>
+                <S>Get-S3ObjectLockConfiguration</S>
+                <S>Get-S3ObjectMetadata</S>
+                <S>Get-S3ObjectRetention</S>
+                <S>Get-S3ObjectTagSet</S>
+                <S>Get-S3ObjectV2</S>
+                <S>Get-S3PreSignedURL</S>
+                <S>Get-S3PublicAccessBlock</S>
+                <S>Get-S3Version</S>
+                <S>New-S3Bucket</S>
+                <S>New-S3BucketMetadataTableConfiguration</S>
+                <S>New-S3Session</S>
+                <S>Read-S3Object</S>
+                <S>Remove-S3Bucket</S>
+                <S>Remove-S3BucketAnalyticsConfiguration</S>
+                <S>Remove-S3BucketEncryption</S>
+                <S>Remove-S3BucketIntelligentTieringConfiguration</S>
+                <S>Remove-S3BucketInventoryConfiguration</S>
+                <S>Remove-S3BucketMetadataTableConfiguration</S>
+                <S>Remove-S3BucketMetricsConfiguration</S>
+                <S>Remove-S3BucketOwnershipControl</S>
+                <S>Remove-S3BucketPolicy</S>
+                <S>Remove-S3BucketReplication</S>
+                <S>Remove-S3BucketTagging</S>
+                <S>Remove-S3BucketWebsite</S>
+                <S>Remove-S3CORSConfiguration</S>
+                <S>Remove-S3LifecycleConfiguration</S>
+                <S>Remove-S3MultipartUpload</S>
+                <S>Remove-S3Object</S>
+                <S>Remove-S3ObjectTagSet</S>
+                <S>Remove-S3PublicAccessBlock</S>
+                <S>Restore-S3Object</S>
+                <S>Select-S3ObjectContent</S>
+                <S>Set-S3ACL</S>
+                <S>Set-S3BucketEncryption</S>
+                <S>Test-S3Bucket</S>
+                <S>Write-S3BucketAccelerateConfiguration</S>
+                <S>Write-S3BucketAnalyticsConfiguration</S>
+                <S>Write-S3BucketIntelligentTieringConfiguration</S>
+                <S>Write-S3BucketInventoryConfiguration</S>
+                <S>Write-S3BucketLogging</S>
+                <S>Write-S3BucketMetricsConfiguration</S>
+                <S>Write-S3BucketNotification</S>
+                <S>Write-S3BucketOwnershipControl</S>
+                <S>Write-S3BucketPolicy</S>
+                <S>Write-S3BucketReplication</S>
+                <S>Write-S3BucketRequestPayment</S>
+                <S>Write-S3BucketTagging</S>
+                <S>Write-S3BucketVersioning</S>
+                <S>Write-S3BucketWebsite</S>
+                <S>Write-S3CORSConfiguration</S>
+                <S>Write-S3GetObjectResponse</S>
+                <S>Write-S3LifecycleConfiguration</S>
+                <S>Write-S3Object</S>
+                <S>Write-S3ObjectLegalHold</S>
+                <S>Write-S3ObjectLockConfiguration</S>
+                <S>Write-S3ObjectRetention</S>
+                <S>Write-S3ObjectTagSet</S>
+              </LST>
+            </Obj>
+          </En>
+          <En>
+            <S N="Key">RoleCapability</S>
+            <Ref N="Value" RefId="3" />
+          </En>
+          <En>
+            <S N="Key">Function</S>
+            <Ref N="Value" RefId="3" />
+          </En>
+          <En>
+            <S N="Key">DscResource</S>
+            <Ref N="Value" RefId="3" />
+          </En>
+        </DCT>
+      </Obj>
+      <Nil N="PowerShellGetFormatVersion" />
+      <S N="ReleaseNotes">https://github.com/aws/aws-tools-for-powershell/blob/master/CHANGELOG.md</S>
+      <Obj N="Dependencies" RefId="6">
+        <TNRef RefId="1" />
+        <LST>
+          <Obj RefId="7">
+            <TN RefId="3">
+              <T>System.Collections.Specialized.OrderedDictionary</T>
+              <T>System.Object</T>
+            </TN>
+            <DCT>
+              <En>
+                <S N="Key">Name</S>
+                <S N="Value">AWS.Tools.Common</S>
+              </En>
+              <En>
+                <S N="Key">RequiredVersion</S>
+                <S N="Value">4.1.761</S>
+              </En>
+              <En>
+                <S N="Key">CanonicalId</S>
+                <S N="Value">nuget:AWS.Tools.Common/[4.1.761]</S>
+              </En>
+            </DCT>
+          </Obj>
+        </LST>
+      </Obj>
+      <S N="RepositorySourceLocation">https://www.powershellgallery.com/api/v2</S>
+      <S N="Repository">PSGallery</S>
+      <S N="PackageManagementProvider">NuGet</S>
+      <Obj N="AdditionalMetadata" RefId="8">
+        <TN RefId="4">
+          <T>System.Management.Automation.PSCustomObject</T>
+          <T>System.Object</T>
+        </TN>
+        <MS>
+          <S N="copyright">Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.</S>
+          <S N="description">The S3 module of AWS Tools for PowerShell lets developers and administrators manage Amazon Simple Storage Service (S3) from the PowerShell scripting environment. In order to manage each AWS service, install the corresponding module (e.g. AWS.Tools.EC2, AWS.Tools.S3...)._x000D__x000A_The module AWS.Tools.Installer (https://www.powershellgallery.com/packages/AWS.Tools.Installer/) makes it easier to install, update and uninstall the AWS.Tools modules._x000D__x000A_This version of AWS Tools for PowerShell is compatible with Windows PowerShell 5.1+ and PowerShell Core 6+ on Windows, Linux and macOS. When running on Windows PowerShell, .NET Framework 4.7.2 or newer is required. Alternative modules AWSPowerShell.NetCore and AWSPowerShell, provide support for all AWS services from a single module and also support older versions of Windows PowerShell and .NET Framework.</S>
+          <S N="requireLicenseAcceptance">False</S>
+          <S N="releaseNotes">https://github.com/aws/aws-tools-for-powershell/blob/master/CHANGELOG.md</S>
+          <S N="isLatestVersion">True</S>
+          <S N="isAbsoluteLatestVersion">False</S>
+          <S N="versionDownloadCount">3708</S>
+          <S N="downloadCount">14167741</S>
+          <S N="packageSize">737751</S>
+          <S N="published">2/19/2025 11:02:44 PM +00:00</S>
+          <S N="created">2/19/2025 11:02:44 PM +00:00</S>
+          <S N="lastUpdated">2/20/2025 1:30:00 AM +00:00</S>
+          <S N="tags">AWS cloud Windows PSEdition_Desktop PSEdition_Core Linux MacOS Mac PSModule PSCmdlet_Add-S3PublicAccessBlock PSCommand_Add-S3PublicAccessBlock PSCmdlet_Copy-S3Object PSCommand_Copy-S3Object PSCmdlet_Get-S3ACL PSCommand_Get-S3ACL PSCmdlet_Get-S3Bucket PSCommand_Get-S3Bucket PSCmdlet_Get-S3BucketAccelerateConfiguration PSCommand_Get-S3BucketAccelerateConfiguration PSCmdlet_Get-S3BucketAnalyticsConfiguration PSCommand_Get-S3BucketAnalyticsConfiguration PSCmdlet_Get-S3BucketAnalyticsConfigurationList PSCommand_Get-S3BucketAnalyticsConfigurationList PSCmdlet_Get-S3BucketEncryption PSCommand_Get-S3BucketEncryption PSCmdlet_Get-S3BucketIntelligentTieringConfiguration PSCommand_Get-S3BucketIntelligentTieringConfiguration PSCmdlet_Get-S3BucketIntelligentTieringConfigurationList PSCommand_Get-S3BucketIntelligentTieringConfigurationList PSCmdlet_Get-S3BucketInventoryConfiguration PSCommand_Get-S3BucketInventoryConfiguration PSCmdlet_Get-S3BucketInventoryConfigurationList PSCommand_Get-S3BucketInventoryConfigurationList PSCmdlet_Get-S3BucketLocation PSCommand_Get-S3BucketLocation PSCmdlet_Get-S3BucketLogging PSCommand_Get-S3BucketLogging PSCmdlet_Get-S3BucketMetadataTableConfiguration PSCommand_Get-S3BucketMetadataTableConfiguration PSCmdlet_Get-S3BucketMetricsConfiguration PSCommand_Get-S3BucketMetricsConfiguration PSCmdlet_Get-S3BucketMetricsConfigurationList PSCommand_Get-S3BucketMetricsConfigurationList PSCmdlet_Get-S3BucketNotification PSCommand_Get-S3BucketNotification PSCmdlet_Get-S3BucketOwnershipControl PSCommand_Get-S3BucketOwnershipControl PSCmdlet_Get-S3BucketPolicy PSCommand_Get-S3BucketPolicy PSCmdlet_Get-S3BucketPolicyStatus PSCommand_Get-S3BucketPolicyStatus PSCmdlet_Get-S3BucketReplication PSCommand_Get-S3BucketReplication PSCmdlet_Get-S3BucketRequestPayment PSCommand_Get-S3BucketRequestPayment PSCmdlet_Get-S3BucketTagging PSCommand_Get-S3BucketTagging PSCmdlet_Get-S3BucketVersioning PSCommand_Get-S3BucketVersioning PSCmdlet_Get-S3BucketWebsite PSCommand_Get-S3BucketWebsite PSCmdlet_Get-S3CORSConfiguration PSCommand_Get-S3CORSConfiguration PSCmdlet_Get-S3DirectoryBucket PSCommand_Get-S3DirectoryBucket PSCmdlet_Get-S3LifecycleConfiguration PSCommand_Get-S3LifecycleConfiguration PSCmdlet_Get-S3MultipartUpload PSCommand_Get-S3MultipartUpload PSCmdlet_Get-S3Object PSCommand_Get-S3Object PSCmdlet_Get-S3ObjectAttribute PSCommand_Get-S3ObjectAttribute PSCmdlet_Get-S3ObjectLegalHold PSCommand_Get-S3ObjectLegalHold PSCmdlet_Get-S3ObjectLockConfiguration PSCommand_Get-S3ObjectLockConfiguration PSCmdlet_Get-S3ObjectMetadata PSCommand_Get-S3ObjectMetadata PSCmdlet_Get-S3ObjectRetention PSCommand_Get-S3ObjectRetention PSCmdlet_Get-S3ObjectTagSet PSCommand_Get-S3ObjectTagSet PSCmdlet_Get-S3ObjectV2 PSCommand_Get-S3ObjectV2 PSCmdlet_Get-S3PreSignedURL PSCommand_Get-S3PreSignedURL PSCmdlet_Get-S3PublicAccessBlock PSCommand_Get-S3PublicAccessBlock PSCmdlet_Get-S3Version PSCommand_Get-S3Version PSCmdlet_New-S3Bucket PSCommand_New-S3Bucket PSCmdlet_New-S3BucketMetadataTableConfiguration PSCommand_New-S3BucketMetadataTableConfiguration PSCmdlet_New-S3Session PSCommand_New-S3Session PSCmdlet_Read-S3Object PSCommand_Read-S3Object PSCmdlet_Remove-S3Bucket PSCommand_Remove-S3Bucket PSCmdlet_Remove-S3BucketAnalyticsConfiguration PSCommand_Remove-S3BucketAnalyticsConfiguration PSCmdlet_Remove-S3BucketEncryption PSCommand_Remove-S3BucketEncryption PSCmdlet_Remove-S3BucketIntelligentTieringConfiguration PSCommand_Remove-S3BucketIntelligentTieringConfiguration PSCmdlet_Remove-S3BucketInventoryConfiguration PSCommand_Remove-S3BucketInventoryConfiguration PSCmdlet_Remove-S3BucketMetadataTableConfiguration PSCommand_Remove-S3BucketMetadataTableConfiguration PSCmdlet_Remove-S3BucketMetricsConfiguration PSCommand_Remove-S3BucketMetricsConfiguration PSCmdlet_Remove-S3BucketOwnershipControl PSCommand_Remove-S3BucketOwnershipControl PSCmdlet_Remove-S3BucketPolicy PSCommand_Remove-S3BucketPolicy PSCmdlet_Remove-S3BucketReplication PSCommand_Remove-S3BucketReplication PSCmdlet_Remove-S3BucketTagging PSCommand_Remove-S3BucketTagging PSCmdlet_Remove-S3BucketWebsite PSCommand_Remove-S3BucketWebsite PSCmdlet_Remove-S3CORSConfiguration PSCommand_Remove-S3CORSConfiguration PSCmdlet_Remove-S3LifecycleConfiguration PSCommand_Remove-S3LifecycleConfiguration PSCmdlet_Remove-S3MultipartUpload PSCommand_Remove-S3MultipartUpload PSCmdlet_Remove-S3Object PSCommand_Remove-S3Object PSCmdlet_Remove-S3ObjectTagSet PSCommand_Remove-S3ObjectTagSet PSCmdlet_Remove-S3PublicAccessBlock PSCommand_Remove-S3PublicAccessBlock PSCmdlet_Restore-S3Object PSCommand_Restore-S3Object PSCmdlet_Select-S3ObjectContent PSCommand_Select-S3ObjectContent PSCmdlet_Set-S3ACL PSCommand_Set-S3ACL PSCmdlet_Set-S3BucketEncryption PSCommand_Set-S3BucketEncryption PSCmdlet_Test-S3Bucket PSCommand_Test-S3Bucket PSCmdlet_Write-S3BucketAccelerateConfiguration PSCommand_Write-S3BucketAccelerateConfiguration PSCmdlet_Write-S3BucketAnalyticsConfiguration PSCommand_Write-S3BucketAnalyticsConfiguration PSCmdlet_Write-S3BucketIntelligentTieringConfiguration PSCommand_Write-S3BucketIntelligentTieringConfiguration PSCmdlet_Write-S3BucketInventoryConfiguration PSCommand_Write-S3BucketInventoryConfiguration PSCmdlet_Write-S3BucketLogging PSCommand_Write-S3BucketLogging PSCmdlet_Write-S3BucketMetricsConfiguration PSCommand_Write-S3BucketMetricsConfiguration PSCmdlet_Write-S3BucketNotification PSCommand_Write-S3BucketNotification PSCmdlet_Write-S3BucketOwnershipControl PSCommand_Write-S3BucketOwnershipControl PSCmdlet_Write-S3BucketPolicy PSCommand_Write-S3BucketPolicy PSCmdlet_Write-S3BucketReplication PSCommand_Write-S3BucketReplication PSCmdlet_Write-S3BucketRequestPayment PSCommand_Write-S3BucketRequestPayment PSCmdlet_Write-S3BucketTagging PSCommand_Write-S3BucketTagging PSCmdlet_Write-S3BucketVersioning PSCommand_Write-S3BucketVersioning PSCmdlet_Write-S3BucketWebsite PSCommand_Write-S3BucketWebsite PSCmdlet_Write-S3CORSConfiguration PSCommand_Write-S3CORSConfiguration PSCmdlet_Write-S3GetObjectResponse PSCommand_Write-S3GetObjectResponse PSCmdlet_Write-S3LifecycleConfiguration PSCommand_Write-S3LifecycleConfiguration PSCmdlet_Write-S3Object PSCommand_Write-S3Object PSCmdlet_Write-S3ObjectLegalHold PSCommand_Write-S3ObjectLegalHold PSCmdlet_Write-S3ObjectLockConfiguration PSCommand_Write-S3ObjectLockConfiguration PSCmdlet_Write-S3ObjectRetention PSCommand_Write-S3ObjectRetention PSCmdlet_Write-S3ObjectTagSet PSCommand_Write-S3ObjectTagSet PSIncludes_Cmdlet</S>
+          <S N="developmentDependency">False</S>
+          <S N="updated">2025-02-20T01:30:00Z</S>
+          <S N="NormalizedVersion">4.1.761</S>
+          <S N="Authors">Amazon.com Inc</S>
+          <S N="IsPrerelease">false</S>
+          <S N="ItemType">Module</S>
+          <S N="FileList">AWS.Tools.S3.nuspec|LICENSE|NOTICE|AWS.Tools.S3.Aliases.psm1|AWS.Tools.S3.dll|AWS.Tools.S3.Format.ps1xml|AWS.Tools.S3.psd1|AWS.Tools.S3.XML|AWSSDK.S3.dll|AWS.Tools.S3.Completers.psm1|AWS.Tools.S3.dll-Help.xml</S>
+          <S N="GUID">b4e504bd-3d14-4563-918a-91025140eba4</S>
+          <S N="PowerShellVersion">5.1</S>
+          <S N="DotNetFrameworkVersion">4.7.2</S>
+          <S N="CompanyName">Amazon.com, Inc</S>
+        </MS>
+      </Obj>
+      <S N="InstalledLocation">/workspaces/azure-function-app-python-storage-account/src/functionapp/Modules/AWS.Tools.S3/4.1.761</S>
+    </MS>
+  </Obj>
+</Objs>
