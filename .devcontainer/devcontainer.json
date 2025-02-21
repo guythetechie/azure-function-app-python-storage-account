@@ -22,7 +22,8 @@
 				"GitHub.copilot",
 				"timonwong.shellcheck",
 				"foxundermoon.shell-format",
-				"redhat.vscode-yaml"
+				"redhat.vscode-yaml",
+				"ms-vscode.powershell"
 			]
 		}
 	}

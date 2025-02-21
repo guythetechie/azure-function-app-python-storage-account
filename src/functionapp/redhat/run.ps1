@@ -2,6 +2,8 @@ using namespace System.Net
 
 param($Request)
 
+$ErrorActionPreference = 'Stop'
+
 $pair = "$($Request.Headers["username"]):$($Request.Headers["password"])"
 $credentials = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes($pair))
 $parameters = @{

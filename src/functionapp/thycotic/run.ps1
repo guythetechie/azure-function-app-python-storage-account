@@ -2,12 +2,22 @@ using namespace System.Net
 
 param($Request)
 
+$ErrorActionPreference = 'Stop'
+
+Write-Information "Extracting headers..."
+$headers = @{}
+@("Authorization", "Content-Type") | ForEach-Object {
+    if ($Request.Headers.ContainsKey($_)) {
+        $headers.Add($_, $Request.Headers[$_])
+    }
+}
+
 $parameters = @{
     Uri                  = $Request.Headers["DestinationServer"]
     Method               = 'POST'
     SkipCertificateCheck = $true
     Body                 = $Request.Body
-    Headers              = [hashtable]$Request.Headers
+    Headers              = $headers
 }
 $response = Invoke-RestMethod @parameters
 
