@@ -7,32 +7,30 @@ $QueueItem | ForEach-Object {
     $item = $_
     Write-Information "Processing item: $($item.data.url)"
 
-    Write-Information "Creating download folder..."
-    $folderPath = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
-    New-Item -ItemType Directory -Path $folderPath -Force | Out-Null
-
     Write-Information "Downloading blob from Azure Blob Storage..."
     $blobUri = [System.Uri]::new($item.data.url)
-    $fileName = $blobUri.AbsolutePath.Split('/')[-1]
-    $filePath = Join-Path $folderPath $fileName
+    $blobPath = $blobUri.AbsolutePath.Split('/')[2..($blobUri.AbsolutePath.Split('/').Length)] -join '/'
+    $file = New-TemporaryFile
+    $blobEndpoint = $blobUri.GetLeftPart([System.UriPartial]::Authority)
     $parameters = @{
-        Blob = $fileName
-        Container = $blobUri.AbsolutePath.Split('/')[-2]
-        Destination = $filePath
-        Context = New-AzStorageContext -BlobEndpoint $blobUri.AbsoluteUri -UseConnectedAccount
+        Blob = $blobPath
+        Container = $blobUri.AbsolutePath.Split('/')[1]
+        Destination = $file.FullName
+        Context = New-AzStorageContext -BlobEndpoint $blobEndpoint -UseConnectedAccount
+        Force = $true   
     }
     Get-AzStorageBlobContent @parameters
     
     Write-Information "Uploading blob to S3..."
     $parameters = @{
         BucketName = $env:S3_BUCKET_NAME
-        Key        = "$($env:S3_DIRECTORY_NAME)/$fileName"
-        File       = $filePath
+        Key        = "$($env:S3_DIRECTORY_NAME)/$blobPath"
+        File       = $file.FullName
         AccessKey  = $env:S3_ACCESS_KEY
         SecretKey  = $env:S3_SECRET_KEY
     }
     Write-S3Object @parameters
 
-    Write-Information "Deleting download folder..."
-    Remove-Item -Path $folderPath -Recurse -Force
+    Write-Information "Deleting file..."
+    Remove-Item -Path $file.FullName
 }
