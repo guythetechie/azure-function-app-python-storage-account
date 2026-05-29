@@ -439,14 +439,14 @@ module storageDeployment 'br/public:avm/res/storage/storage-account:0.14.0' = {
     requireInfrastructureEncryption: false
     supportsHttpsTrafficOnly: true
     networkAcls: {
-      bypass: 'None'
-      defaultAction: 'Deny'
-      ipRules: [
-        for ipAddress in allowedPublicIpAddressList: {
-          action: 'Allow'
-          value: ipAddress
-        }
-      ]
+      bypass: 'AzureServices'
+      defaultAction: 'Allow'
+      // ipRules: [
+      //   for ipAddress in allowedPublicIpAddressList: {
+      //     action: 'Allow'
+      //     value: ipAddress
+      //   }
+      // ]
       virtualNetworkRules: []
     }
     roleAssignments: [
