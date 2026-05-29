@@ -622,7 +622,7 @@ module functionAppDeployment 'br/public:avm/res/web/site:0.23.0' = {
         workspaceResourceId: logAnalyticsWorkspace.id
         logCategoriesAndGroups: [
           {
-            category: 'FunctionApplicationLogs'
+            category: 'allLogs'
             enabled: true
           }
         ]
