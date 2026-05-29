@@ -1,0 +1,27 @@
+{
+    "id": "azure",
+    "version": "1.0.0",
+    "name": "azure",
+    "dependsOn": {
+        "ghcr.io/devcontainers/features/azure-cli:1": {
+            "version": "latest",
+            "installBicep": true
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-azuretools.vscode-bicep",
+                "ms-azuretools.vscode-azurefunctions"
+            ],
+            "mcp": {
+                "servers": {
+                    "microsoft.docs.mcp": {
+                        "type": "http",
+                        "url": "https://learn.microsoft.com/api/mcp"
+                    }
+                }
+            }
+        }
+    }
+}

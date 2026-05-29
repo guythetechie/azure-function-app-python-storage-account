@@ -17,30 +17,36 @@ jobs:
           client-id: ${{ vars.AZURE_CLIENT_ID }}
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-      - name: Deploy Bicep file
-        shell: bash
+      - name: Create deployment stack
         env:
-          ALLOWED_IP_ADDRESSES: ${{ vars.ALLOWED_IP_ADDRESSES }}
-          AZURE_LOCATION: eastus
-          ACTION_ON_UNMANAGE: deleteAll
-          DEPLOYMENT_STACK_NAME: ${{ vars.DEPLOYMENT_STACK_NAME }}
-          TEMPLATE_FILE_PATH: "${{ github.workspace }}/bicep/main.bicep"
-          TEMPLATE_PARAMETER_FILE_PATH: "${{ github.workspace }}/bicep/main.bicepparam"
-        run: |
-          set -euo pipefail
+            ALLOWED_IP_ADDRESSES: ${{ vars.ALLOWED_IP_ADDRESSES }}
+            AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
+            DEPLOYMENT_STACK_NAME: ${{ vars.DEPLOYMENT_STACK_NAME }}
+            ENTRA_ADMIN_OBJECT_IDS: ${{ vars.ENTRA_ADMIN_OBJECT_IDS }}
+            TEMPLATE_FILE_PATH: "${{ github.workspace }}/bicep/main.bicep"
 
-          echo "Creating deployment stack..."
-          az stack sub create \
-            --action-on-unmanage "$ACTION_ON_UNMANAGE" \
-            --deny-settings-mode none \
-            --location "$AZURE_LOCATION" \
-            --name "$DEPLOYMENT_STACK_NAME" \
-            --template-file "$TEMPLATE_FILE_PATH" \
-            --parameters "$TEMPLATE_PARAMETER_FILE_PATH" \
-            --yes
+#             param allowedIpAddressesCsv string = ''
+# param deploymentStackName string
+# param entraAdminObjectIds string = ''
+# param location string
+# param tags object = {}
+        run: |
+            set -euo pipefail
+
+            echo "Creating deployment stack..."
+            az stack sub create \
+              --action-on-unmanage "deleteAll" \
+              --deny-settings-mode "None" \
+              --location "$AZURE_LOCATION" \
+              --name "$DEPLOYMENT_STACK_NAME" \
+              --parameters allowedIpAddressesCsv="$ALLOWED_IP_ADDRESSES" \
+              --parameters deploymentStackName="$DEPLOYMENT_STACK_NAME" \
+              --parameters entraAdminObjectIds="$ENTRA_ADMIN_OBJECT_IDS" \
+              --parameters location="$AZURE_LOCATION" \
+              --template-file "$TEMPLATE_FILE_PATH" \
+              --yes
       - name: Publish function app
         env:
-          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           DEPLOYMENT_STACK_NAME: ${{ vars.DEPLOYMENT_STACK_NAME }}
           ZIP_FILE_PATH: ${{ runner.temp }}/function-app.zip
         run: |
@@ -52,8 +58,7 @@ jobs:
             -i '*functionapp/function_app.py' \
             -i '*functionapp/host.json' \
             -i '*functionapp/requirements.txt' \
-            -i '*functionapp/import_on_timer.py' \
-            -i '*functionapp/import_with_storage_queue.py' \
+            -i '*functionapp/proxy_http_trigger.py' \
             --junk-paths
 
           echo "Publishing function app..."
