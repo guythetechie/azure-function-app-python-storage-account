@@ -612,6 +612,9 @@ module functionAppDeployment 'br/public:avm/res/web/site:0.23.0' = {
     managedIdentities: {
       userAssignedResourceIds: [managedIdentity.id]
     }
+    siteConfig: {
+      minTlsVersion: '1.2'
+    }
     functionAppConfig: {
       deployment: {
         storage: {
