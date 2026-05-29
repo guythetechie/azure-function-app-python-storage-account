@@ -592,7 +592,6 @@ module appServicePlanDeployment 'br/public:avm/res/web/serverfarm:0.7.0' = {
     name: appServicePlanName
     location: location
     skuName: 'FC1'
-    workerTierName: 'FlexConsumption'
     reserved: true
   }
 }
