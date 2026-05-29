@@ -53,13 +53,14 @@ jobs:
           set -euo pipefail
 
           echo "Creating zip file..."
-          zip -r "$ZIP_FILE_PATH" \
-            "${{ github.workspace }}/src/functionapp" \
-            -i '*functionapp/function_app.py' \
-            -i '*functionapp/host.json' \
-            -i '*functionapp/requirements.txt' \
-            -i '*functionapp/proxy_http_trigger.py' \
-            --junk-paths
+          cd "${{ github.workspace }}/src/functionapp"
+          zip -r "$ZIP_FILE_PATH" . \
+            -x '.venv/*' \
+            -x '.python_packages/*' \
+            -x '__pycache__/*' \
+            -x '*/__pycache__/*' \
+            -x '*.pyc' \
+            -x 'local.settings.json'
 
           echo "Publishing function app..."
           DEPLOYMENT_STACK=$(az stack sub show -n "$DEPLOYMENT_STACK_NAME")

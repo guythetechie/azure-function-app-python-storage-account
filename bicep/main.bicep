@@ -234,6 +234,9 @@ var privateDnsZones = {
   queue: {
     name: 'privatelink.queue.${environment().suffixes.storage}'
   }
+  table: {
+    name: 'privatelink.table.${environment().suffixes.storage}'
+  }
 }
 
 var amplsPrivateDnsZones = filter(
@@ -320,12 +323,6 @@ module privateDnsZoneDeployments 'br/public:avm/res/network/private-dns-zone:0.8
     params: {
       name: zone.value.name
       location: 'global'
-      virtualNetworkLinks: [
-        {
-          name: virtualNetwork.name
-          virtualNetworkResourceId: virtualNetwork.id
-        }
-      ]
     }
   }
 ]
@@ -338,6 +335,12 @@ resource storageBlobPrivateDnsZone 'Microsoft.Network/privateDnsZones@2024-06-01
 
 resource storageQueuePrivateDnsZone 'Microsoft.Network/privateDnsZones@2024-06-01' existing = {
   name: privateDnsZones.queue.name
+  scope: resourceGroup
+  dependsOn: [privateDnsZoneDeployments]
+}
+
+resource storageTablePrivateDnsZone 'Microsoft.Network/privateDnsZones@2024-06-01' existing = {
+  name: privateDnsZones.table.name
   scope: resourceGroup
   dependsOn: [privateDnsZoneDeployments]
 }
@@ -490,6 +493,22 @@ module storageDeployment 'br/public:avm/res/storage/storage-account:0.14.0' = {
         }
       ]
     }
+    tableServices: {
+      diagnosticSettings: [
+        {
+          name: 'enable-all'
+          logAnalyticsDestinationType: 'Dedicated'
+          workspaceResourceId: logAnalyticsWorkspace.id
+          logCategoriesAndGroups: [
+            {
+              categoryGroup: 'allLogs'
+              enabled: true
+            }
+          ]
+          metricCategories: []
+        }
+      ]
+    }
     privateEndpoints: [
       {
         name: '${storageAccountName}-blob-pe'
@@ -521,6 +540,23 @@ module storageDeployment 'br/public:avm/res/storage/storage-account:0.14.0' = {
             {
               name: 'queue'
               privateDnsZoneResourceId: storageQueuePrivateDnsZone.id
+            }
+          ]
+        }
+      }
+      {
+        name: '${storageAccountName}-table-pe'
+        location: location
+        customNetworkInterfaceName: '${storageAccountName}-table-pe-nic'
+        service: 'table'
+        privateLinkServiceConnectionName: 'table'
+        subnetResourceId: privateLinkSubnet.id
+        privateDnsZoneGroup: {
+          name: 'default'
+          privateDnsZoneGroupConfigs: [
+            {
+              name: 'table'
+              privateDnsZoneResourceId: storageTablePrivateDnsZone.id
             }
           ]
         }
@@ -604,8 +640,8 @@ module functionAppDeployment 'br/public:avm/res/web/site:0.23.0' = {
           AzureWebJobsStorage__accountName: storageAccount.name
           AzureWebJobsStorage__credential: 'managedidentity'
           AzureWebJobsStorage__clientId: managedIdentity.properties.clientId
-          APPINSIGHTS_INSTRUMENTATIONKEY: applicationInsights.properties.InstrumentationKey
           APPLICATIONINSIGHTS_AUTHENTICATION_STRING: 'ClientId=${managedIdentity.properties.clientId};Authorization=AAD'
+          APPLICATIONINSIGHTS_CONNECTION_STRING: applicationInsights.properties.ConnectionString
         }
       }
       {
