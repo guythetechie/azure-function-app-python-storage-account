@@ -1,7 +1,9 @@
 import azure.functions as func
+import aiohttp
 
-from proxy_http_trigger import blueprint as http_trigger_blueprint
+async def main(request: func.HttpRequest) -> func.HttpResponse:
+    async with aiohttp.ClientSession() as client:
+        async with client.get("https://www.google.com") as response:
+            return func.HttpResponse(await response.text())
 
-app = func.FunctionApp()
-
-app.register_blueprint(http_trigger_blueprint)
+    return func.HttpResponse(body='NotFound', status_code=404)
