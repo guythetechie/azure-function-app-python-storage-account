@@ -3,6 +3,4 @@
 # Manually managing azure-functions-worker may cause unexpected issues
 
 azure-functions
-aiohttp
-# azurefunctions-extensions-http-fastapi
-# requests
+httpx
