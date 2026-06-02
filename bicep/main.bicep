@@ -615,6 +615,31 @@ module functionAppDeployment 'br/public:avm/res/web/site:0.23.0' = {
     siteConfig: {
       minTlsVersion: '1.2'
     }
+    diagnosticSettings: [
+      {
+        name: 'enable-all'
+        logAnalyticsDestinationType: 'Dedicated'
+        workspaceResourceId: logAnalyticsWorkspace.id
+        logCategoriesAndGroups: [
+          {
+            category: 'FunctionAppLogs'
+            enabled: true
+          }
+          {
+            category: 'AppServiceAuditLogs'
+            enabled: true
+          }
+          {
+            category: 'AppServiceIPSecAuditLogs'
+            enabled: true
+          }
+          {
+            category: 'AppServiceAuthenticationLogs'
+            enabled: true
+          }
+        ]
+      }
+    ]
     functionAppConfig: {
       deployment: {
         storage: {
