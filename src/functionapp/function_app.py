@@ -3,11 +3,13 @@ import logging
 
 app = func.FunctionApp()
 
-@app.function_name(name="HttpTrigger1")
+
+@app.function_name(name="proxy")
 @app.route(route="hello", auth_level=func.AuthLevel.ANONYMOUS)
-def test_function(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info('Python HTTP trigger function processed a request.')
+async def test_function(request: func.HttpRequest) -> func.HttpResponse:
+    method = request.method
+    logging.info(f'Python HTTP trigger function processed a {method} request.')
     return func.HttpResponse(
         "This HTTP triggered function executed successfully.",
         status_code=200
-        )
+    )
