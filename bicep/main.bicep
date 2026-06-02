@@ -669,7 +669,6 @@ module functionAppDeployment 'br/public:avm/res/web/site:0.23.0' = {
           AzureWebJobsStorage__clientId: managedIdentity.properties.clientId
           APPLICATIONINSIGHTS_AUTHENTICATION_STRING: 'ClientId=${managedIdentity.properties.clientId};Authorization=AAD'
           APPLICATIONINSIGHTS_CONNECTION_STRING: applicationInsights.properties.ConnectionString
-          PYTHON_ENABLE_INIT_INDEXING: '1'
         }
       }
       {

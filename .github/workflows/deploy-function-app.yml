@@ -71,4 +71,5 @@ jobs:
           az functionapp deployment source config-zip \
             --name "$FUNCTION_APP_NAME" \
             --resource-group "$RESOURCE_GROUP_NAME" \
+            --build-remote true \
             --src "$ZIP_FILE_PATH"
