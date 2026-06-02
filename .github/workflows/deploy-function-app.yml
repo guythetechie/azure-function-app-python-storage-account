@@ -27,27 +27,27 @@ jobs:
         run: |
             set -euo pipefail
 
-            echo "Getting runner public IP address..."
-            RUNNER_PUBLIC_IP=$(curl -fsSL https://api.ipify.org)
+            # echo "Getting runner public IP address..."
+            # RUNNER_PUBLIC_IP=$(curl -fsSL https://api.ipify.org)
 
-            if [ -z "$ALLOWED_IP_ADDRESSES" ]; then
-              EFFECTIVE_ALLOWED_IP_ADDRESSES="$RUNNER_PUBLIC_IP"
-            else
-              EFFECTIVE_ALLOWED_IP_ADDRESSES="$ALLOWED_IP_ADDRESSES,$RUNNER_PUBLIC_IP"
-            fi
+            # if [ -z "$ALLOWED_IP_ADDRESSES" ]; then
+            #   EFFECTIVE_ALLOWED_IP_ADDRESSES="$RUNNER_PUBLIC_IP"
+            # else
+            #   EFFECTIVE_ALLOWED_IP_ADDRESSES="$ALLOWED_IP_ADDRESSES,$RUNNER_PUBLIC_IP"
+            # fi
 
-            echo "Creating deployment stack..."
-            az stack sub create \
-              --action-on-unmanage "deleteAll" \
-              --deny-settings-mode "None" \
-              --location "$AZURE_LOCATION" \
-              --name "$DEPLOYMENT_STACK_NAME" \
-              --parameters allowedIpAddressesCsv="$EFFECTIVE_ALLOWED_IP_ADDRESSES" \
-              --parameters deploymentStackName="$DEPLOYMENT_STACK_NAME" \
-              --parameters entraAdminObjectIds="$ENTRA_ADMIN_OBJECT_IDS" \
-              --parameters location="$AZURE_LOCATION" \
-              --template-file "$TEMPLATE_FILE_PATH" \
-              --yes
+            # echo "Creating deployment stack..."
+            # az stack sub create \
+            #   --action-on-unmanage "deleteAll" \
+            #   --deny-settings-mode "None" \
+            #   --location "$AZURE_LOCATION" \
+            #   --name "$DEPLOYMENT_STACK_NAME" \
+            #   --parameters allowedIpAddressesCsv="$EFFECTIVE_ALLOWED_IP_ADDRESSES" \
+            #   --parameters deploymentStackName="$DEPLOYMENT_STACK_NAME" \
+            #   --parameters entraAdminObjectIds="$ENTRA_ADMIN_OBJECT_IDS" \
+            #   --parameters location="$AZURE_LOCATION" \
+            #   --template-file "$TEMPLATE_FILE_PATH" \
+            #   --yes
       - name: Publish function app
         env:
           DEPLOYMENT_STACK_NAME: ${{ vars.DEPLOYMENT_STACK_NAME }}
