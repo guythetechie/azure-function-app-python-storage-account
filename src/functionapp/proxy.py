@@ -92,7 +92,8 @@ def parse_request(request: fastapi.Request) -> ParsedRequest:
 
 
 async def send_parsed_request(parsed_request: ParsedRequest) -> fastapi.Response:
-    client = httpx.AsyncClient(follow_redirects=False)
+    timeout = httpx.Timeout(connect=10.0, read=60.0, write=60.0, pool=60.0)
+    client = httpx.AsyncClient(follow_redirects=False, timeout=timeout)
 
     try:
 
